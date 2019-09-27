@@ -3,6 +3,15 @@
     #include<stdio.h>
     #include<string.h>
 
+    // lexeme location
+    int yycolumn = 1;
+    #define YY_USER_ACTION
+        yylloc.first_line = yylloc.last_line = yylineno; \
+        yylloc.first_column = yycolumn; \
+        yylloc.last_column = yycolumn + yyleng - 1; \
+        yycolumn += yyleng;
+
+
     void output(int lineno, char* type, char* value);
 
     void unknown_char(char c, int lineno);
@@ -13,7 +22,8 @@
 
 digit [0-9]
 letter [a-zA-Z]
-ws [ \t\n\r]
+ws [ \t\r]
+newline \n
 underline _
 
 INT (0)|([1-9]{digit}*)
@@ -46,6 +56,7 @@ IF if
 ELSE else
 WHILE while
 WS {ws}+
+NEWLINE {newline}
 
 %%
 
@@ -120,6 +131,8 @@ WS {ws}+
 {RC}            {output(yylineno, "RC", yytext);}
 
 {WS}            {}
+
+{NEWLINE}       {yycolumn = 1;}
 
 .               {unknown_char(*yytext, yylineno);}
 
