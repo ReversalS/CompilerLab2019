@@ -2,16 +2,20 @@
 %{
     #include<stdio.h>
     #include<string.h>
+    #include<stdlib.h>
+    #include"syntax.tab.h"
+    #include"parser_tree.h"
+
+
 
     // lexeme location
     int yycolumn = 1;
-    #define YY_USER_ACTION
-        yylloc.first_line = yylloc.last_line = yylineno; \
-        yylloc.first_column = yycolumn; \
-        yylloc.last_column = yycolumn + yyleng - 1; \
-        yycolumn += yyleng;
+    int first_column = 1;
+    int last_column = 1;
 
+    #define YY_USER_ACTION first_column = yycolumn; last_column = yycolumn + yyleng - 1; yycolumn += yyleng;
 
+    union NODE_VALUE nv;
     void output(int lineno, char* type, char* value);
 
     void unknown_char(char c, int lineno);
@@ -59,6 +63,7 @@ WS {ws}+
 NEWLINE {newline}
 
 %%
+    init_st();
 
 "//"                        {BEGIN(line_comment);}
 
@@ -74,61 +79,194 @@ NEWLINE {newline}
 
 <block_comment>"*"+"/"      {BEGIN(INITIAL);}
 
-{TYPE}          {output(yylineno, "TYPE", yytext);}
+{TYPE} {
+    if(strcmp(yytext, "int") == 0){
+        nv.type = INT_T;
+        yylval = create_T(TYPE_E, nv, yylineno, first_column);
+        return TYPE;
+    } else{
+        nv.type = FLOAT_T;
+        yylval = create_T(TYPE_E, nv, yylineno, first_column);
+        return TYPE;
+    }
+}
 
-{STRUCT}        {output(yylineno, "STRUCT", yytext);}
+{STRUCT} {
+    nv.keyword = STRUCT_E;
+    yylval = create_T(KEYWORD_E, nv, yylineno, first_column);
+    return STRUCT;
+}
 
-{RETURN}        {output(yylineno, "RETURN", yytext);}
+{RETURN} {
+    nv.keyword = RETURN_E;
+    yylval = create_T(KEYWORD_E, nv, yylineno, first_column);
+    return RETURN;
+}
 
-{IF}            {output(yylineno, "IF", yytext);}
+{IF} {
+    nv.keyword = IF_E;
+    yylval = create_T(KEYWORD_E, nv, yylineno, first_column);
+    return IF;
+}
 
-{ELSE}          {output(yylineno, "ELSE", yytext);}
+{ELSE} {
+    nv.keyword = ELSE_E;
+    yylval = create_T(KEYWORD_E, nv, yylineno, first_column);
+    return ELSE;
+}
 
-{WHILE}         {output(yylineno, "WHILE", yytext);}
+{WHILE} {
+    nv.keyword = WHILE_E;
+    yylval = create_T(KEYWORD_E, nv, yylineno, first_column);
+    return WHILE;
+}
 
-{INT}           {output(yylineno, "INT", yytext);}
+{INT} {
+    nv.ival = atoi(yytext);
+    yylval = create_T(INT_E, nv, yylineno, first_column);
+    return INT;
+}
 
 {BADINT}        {invalid_id(yytext, yylineno);}
 
-{FLOAT}         {output(yylineno, "FLOAT", yytext);}
+{FLOAT} {
+    nv.fval = atof(yytext);
+    yylval = create_T(FLOAT_E, nv, yylineno, first_column);
+    return FLOAT;
+}
 
 {BADFLOAT}      {invalid_id(yytext, yylineno);}
 
-{ID}            {output(yylineno, "ID", yytext);}
+{ID} {
+    yylval = create_ID(yytext, yylineno, first_column);
+    return ID;
+}
 
-{SEMI}          {output(yylineno, "SEMI", yytext);}
+{SEMI} {
+    nv.other = SEMI_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return SEMI;
+}
 
-{COMMA}         {output(yylineno, "COMMA", yytext);}
+{COMMA} {
+    nv.other = COMMA_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return COMMA;
+}
 
-{ASSIGNOP}      {output(yylineno, "ASSIGNOP", yytext);}
+{ASSIGNOP} {
+    nv.other = ASSIGNOP_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return ASSIGNOP;
+}
 
-{RELOP}         {output(yylineno, "RELOP", yytext);}
+{RELOP} {
+    if(strcmp(yytext, ">") == 0){
+        nv.relop = GT_E;
+        yylval = create_T(RELOP_E, nv, yylineno, first_column);
+        return RELOP;
+    } else if (strcmp(yytext, "<") == 0){
+        nv.relop = LT_E;
+        yylval = create_T(RELOP_E, nv, yylineno, first_column);
+        return RELOP;
+    } else if (strcmp(yytext, ">=") == 0){
+        nv.relop = GE_E;
+        yylval = create_T(RELOP_E, nv, yylineno, first_column);
+        return RELOP;
+    } else if (strcmp(yytext, "<=") == 0){
+        nv.relop = LE_E;
+        yylval = create_T(RELOP_E, nv, yylineno, first_column);
+        return RELOP;
+    } else if (strcmp(yytext, "==") == 0){
+        nv.relop = EQ_E;
+        yylval = create_T(RELOP_E, nv, yylineno, first_column);
+        return RELOP;
+    } else if (strcmp(yytext, "!=") == 0){
+        nv.relop = NE_E;
+        yylval = create_T(RELOP_E, nv, yylineno, first_column);
+        return RELOP;
+    } else{
+        // error
+    }
+}
 
-{PLUS}          {output(yylineno, "PLUS", yytext);}
+{PLUS} {
+    nv.other = PLUS_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return PLUS;
+}
 
-{STAR}          {output(yylineno, "STAR", yytext);}
+{STAR} {
+    nv.other = STAR_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return STAR;
+}
 
-{DIV}           {output(yylineno, "DIV", yytext);}
+{DIV} {
+    nv.other = DIV_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return DIV;
+}
 
-{AND}           {output(yylineno, "AND", yytext);}
+{AND} {
+    nv.other = AND_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return AND;
+}
 
-{OR}            {output(yylineno, "OR", yytext);}
+{OR} {
+    nv.other = OR_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return OR;
+}
 
-{DOT}           {output(yylineno, "DOT", yytext);}
+{DOT} {
+    nv.other = DOT_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return DOT;
+}
 
-{NOT}           {output(yylineno, "NOT", yytext);}
+{NOT} {
+    nv.other = NOT_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return NOT;
+}
 
-{LP}            {output(yylineno, "LP", yytext);}
+{LP} {
+    nv.other = LP_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return LP;
+}
 
-{RP}            {output(yylineno, "RP", yytext);}
+{RP} {
+    nv.other = RP_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return RP;
+}
 
-{LB}            {output(yylineno, "LB", yytext);}
+{LB} {
+    nv.other = LB_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return LB;
+}
 
-{RB}            {output(yylineno, "RB", yytext);}
+{RB} {
+    nv.other = RB_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return RB;
+}
 
-{LC}            {output(yylineno, "LC", yytext);}
+{LC} {
+    nv.other = LC_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return LC;
+}
 
-{RC}            {output(yylineno, "RC", yytext);}
+{RC} {
+    nv.other = RC_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return RC;
+}
 
 {WS}            {}
 

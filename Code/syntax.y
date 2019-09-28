@@ -1,8 +1,11 @@
 %{
     /* ... */
+    #include "lex.yy.c"
+    #include "parser_tree.h"
 
+    int yyerror(const char*);
 %}
-
+%define api.value.type { struct Node* }
 /* declared token */
 %token ID INT FLOAT TYPE
 %token AND OR RELOP PLUS MINUS STAR DIV ASSIGNOP NOT
