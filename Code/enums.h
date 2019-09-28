@@ -40,25 +40,25 @@ extern char* nt_type_dict[];
 
 // 终结符(Terminal)类型，包括 int，float，id，类型标识符，关系符，关键字，其他
 enum T_TYPE {
-    INT,
-    FLOAT,
-    ID,
-    TYPE,
-    RELOP,
-    KEYWORD,
-    OTHER
+    INT_E,
+    FLOAT_E,
+    ID_E,
+    TYPE_E,
+    RELOP_E,
+    KEYWORD_E,
+    OTHER_E
 };
 
 // VALUE
 
 // 关系符及其对应字符串
 enum RELOP {
-    GT,
-    LT,
-    GE,
-    LE,
-    EQ,
-    NE
+    GT_E,
+    LT_E,
+    GE_E,
+    LE_E,
+    EQ_E,
+    NE_E
 };
 
 extern char* relop_dict[];
@@ -73,34 +73,34 @@ extern char* type_dict[];
 
 // 其他终结符及其对应字符串
 enum OTHER {
-    SEMI,
-    COMMA,
-    ASSIGNOP,
-    PLUS,
-    MINUS,
-    STAR,
-    DIV,
-    AND,
-    OR,
-    NOT,
-    DOT,
-    LP,
-    RP,
-    LB,
-    RB,
-    LC,
-    RC,
+    SEMI_E,
+    COMMA_E,
+    ASSIGNOP_E,
+    PLUS_E,
+    MINUS_E,
+    STAR_E,
+    DIV_E,
+    AND_E,
+    OR_E,
+    NOT_E,
+    DOT_E,
+    LP_E,
+    RP_E,
+    LB_E,
+    RB_E,
+    LC_E,
+    RC_E,
 };
 
 extern char* other_dict[];
 
 // 关键字及其对应字符串
 enum KEYWORD {
-    STRUCT,
-    RETURN,
-    IF,
-    ELSE,
-    WHILE
+    STRUCT_E,
+    RETURN_E,
+    IF_E,
+    ELSE_E,
+    WHILE_E
 };
 
 extern char* keyword_dict[];

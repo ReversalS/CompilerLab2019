@@ -1,18 +1,20 @@
 #include <stdio.h>
 
-int yylex();
+int yyrestart(FILE* f);
+int yyparse();
+int yyerror(char* msg);
 
 int main(int argc, char const* argv[])
 {
-    extern FILE* yyin;
-    if (argc > 1) {
-        if (!(yyin = fopen(argv[1], "r"))) {
-            perror(argv[1]);
-            return 1;
-        }
+    if(argc <= 1){
+        return 1;
     }
-    while (yylex() != 0) {
-        ;
+    FILE* f = fopen(argv[1], "r");
+    if(!f){
+        perror(argv[1]);
+        return 1;
     }
+    yyrestart(f);
+    yyparse();
     return 0;
 }

@@ -135,7 +135,7 @@ struct Node* create_ID(char* str, int line, int column)
     union NODE_VALUE nv;
     struct location loc;
     st = T;
-    nt.t_type = ID;
+    nt.t_type = ID_E;
     nv.index = add_entry(str, line, column);
     loc.line = line;
     loc.column = column;
@@ -192,27 +192,27 @@ void print_tree(struct Node* p, int level)
         break;
     case T:
         switch (p->node_type.t_type) {
-        case INT:
+        case INT_E:
             printf("INT: %d\n", p->node_value.ival);
             break;
-        case FLOAT:
+        case FLOAT_E:
             printf("FLOAT: %f\n", p->node_value.fval);
             break;
-        case ID:
+        case ID_E:
             get_id(p->node_value.index, str);
             printf("ID: %s\n", str);
             memset(str, 0, MAX_ID_LENGTH * sizeof(char));
             break;
-        case TYPE:
+        case TYPE_E:
             printf("TYPE: %s\n", type_dict[(int)p->node_value.type]);
             break;
-        case RELOP:
+        case RELOP_E:
             printf("%s\n", relop_dict[(int)p->node_value.relop]);
             break;
-        case KEYWORD:
+        case KEYWORD_E:
             printf("%s\n", keyword_dict[(int)p->node_value.keyword]);
             break;
-        case OTHER:
+        case OTHER_E:
             printf("%s\n", other_dict[(int)p->node_value.other]);
             break;
         }
