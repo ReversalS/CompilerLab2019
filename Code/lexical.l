@@ -3,11 +3,12 @@
     #include<stdio.h>
     #include<string.h>
     #include<stdlib.h>
+    #define YYSTYPE struct Node*
     #include"syntax.tab.h"
     #include"parser_tree.h"
 
 
-
+    
     // lexeme location
     int yycolumn = 1;
     int first_column = 1;

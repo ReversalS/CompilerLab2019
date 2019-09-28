@@ -5,7 +5,7 @@
 
     int yyerror(const char*);
 %}
-%define api.value.type { struct Node* }
+// %define api.value.type { struct Node* }
 /* declared token */
 %token INT
 %token FLOAT
