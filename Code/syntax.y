@@ -19,8 +19,9 @@
 %token WHILE RETURN STRUCT IF ELSE
 
 /* priority */
-%left LP RP
-%left LC RC
+%left LP RP //parenthesis '(' ')'
+%left LB RB //brackets '[' ']'
+            //curly braces '{' '}'
 %left DOT
 // %right NEG
 %right NOT
@@ -30,8 +31,8 @@
 %left AND
 %left OR
 %right ASSIGNOP
-// %left LB RB
-// %nonassoc 
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
 
 %%
 
@@ -83,7 +84,9 @@ StmtList: Stmt StmtList
 Stmt: Exp SEMI
     | CompSt
     | RETURN Exp SEMI
-    | IF LP Exp RP Stmt
+    // | IF LP Exp RP Stmt
+    // | IF LP Exp RP Stmt ELSE Stmt
+    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE
     | IF LP Exp RP Stmt ELSE Stmt
     | WHILE LP Exp RP Stmt
     ;
