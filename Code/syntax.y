@@ -3,14 +3,34 @@
 
 %}
 
+/* declared types */
+
 /* declared token */
-%token ID INT FLOAT TYPE
+%token INT
+%token FLOAT
+%token ID
+%token TYPE
 %token AND OR RELOP PLUS MINUS STAR DIV ASSIGNOP NOT
 %token LP RP
 %token LB RB
 %token LC RC
 %token COMMA DOT SEMI
 %token WHILE RETURN STRUCT IF ELSE
+
+/* priority */
+%left LP RP
+%left LC RC
+%left DOT
+// %right NEG
+%right NOT
+%left STAR DIV
+%left PLUS MINUS
+%left RELOP
+%left AND
+%left OR
+%right ASSIGNOP
+// %left LB RB
+// %nonassoc 
 
 %%
 
