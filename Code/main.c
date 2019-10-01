@@ -1,3 +1,4 @@
+#include "parser_tree.h"
 #include <stdio.h>
 
 int yyrestart(FILE* f);
@@ -6,6 +7,8 @@ int yyerror(char* msg);
 
 int main(int argc, char const* argv[])
 {
+    int ret = -1;
+    
     if(argc <= 1){
         return 1;
     }
@@ -15,6 +18,9 @@ int main(int argc, char const* argv[])
         return 1;
     }
     yyrestart(f);
-    yyparse();
+    ret = yyparse();
+    // printf("yyparse() returns %d\n", ret);
+    if (ret == 0)
+        print_tree(global_root, 0);
     return 0;
 }

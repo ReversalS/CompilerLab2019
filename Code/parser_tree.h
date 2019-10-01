@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+// a global root for parser tree
+struct Node* global_root;
+
 // bison?
 // 为节点的子数组分配空间
 // TODO: 添加再分配功能？Free 原有 malloc 新空间
@@ -71,5 +75,105 @@ struct Node* create_NT(enum NT_TYPE nt_type);
 struct Node* create_T(enum T_TYPE t_type, union NODE_VALUE nv, int line, int column);
 // 创建 id
 struct Node* create_ID(char* str, int line, int column);
+
+
+/* macros that help to efficiently build trees */
+    /* Not Possible since Macro-expansion will not be performed in Bison Actions */
+    // #define FORM_SUBTREE(n, root_type)\
+    //     $$ = create_NT(root_type);\
+    //     allo_child(n, $$);\
+    //     for (int i = 1; i <= n; i++)\
+    //         root->children[i-1] = $##i;\
+    //         set_attr($$, $##i);
+
+	#define FORM_SUBTREE_0(root, root_type)\
+		root = create_NT(root_type);\
+		allo_child(0, root);\
+
+	#define FORM_SUBTREE_1(root, root_type, child0)\
+		root = create_NT(root_type);\
+		allo_child(1, root);\
+		root->children[0] = child0;\
+		set_attr(root, child0);\
+
+	#define FORM_SUBTREE_2(root, root_type, child0, child1)\
+		root = create_NT(root_type);\
+		allo_child(2, root);\
+		root->children[0] = child0;\
+		set_attr(root, child0);\
+		root->children[1] = child1;\
+		set_attr(root, child1);\
+
+	#define FORM_SUBTREE_3(root, root_type, child0, child1, child2)\
+		root = create_NT(root_type);\
+		allo_child(3, root);\
+		root->children[0] = child0;\
+		set_attr(root, child0);\
+		root->children[1] = child1;\
+		set_attr(root, child1);\
+		root->children[2] = child2;\
+		set_attr(root, child2);\
+
+	#define FORM_SUBTREE_4(root, root_type, child0, child1, child2, child3)\
+		root = create_NT(root_type);\
+		allo_child(4, root);\
+		root->children[0] = child0;\
+		set_attr(root, child0);\
+		root->children[1] = child1;\
+		set_attr(root, child1);\
+		root->children[2] = child2;\
+		set_attr(root, child2);\
+		root->children[3] = child3;\
+		set_attr(root, child3);\
+
+	#define FORM_SUBTREE_5(root, root_type, child0, child1, child2, child3, child4)\
+		root = create_NT(root_type);\
+		allo_child(5, root);\
+		root->children[0] = child0;\
+		set_attr(root, child0);\
+		root->children[1] = child1;\
+		set_attr(root, child1);\
+		root->children[2] = child2;\
+		set_attr(root, child2);\
+		root->children[3] = child3;\
+		set_attr(root, child3);\
+		root->children[4] = child4;\
+		set_attr(root, child4);\
+
+	#define FORM_SUBTREE_6(root, root_type, child0, child1, child2, child3, child4, child5)\
+		root = create_NT(root_type);\
+		allo_child(6, root);\
+		root->children[0] = child0;\
+		set_attr(root, child0);\
+		root->children[1] = child1;\
+		set_attr(root, child1);\
+		root->children[2] = child2;\
+		set_attr(root, child2);\
+		root->children[3] = child3;\
+		set_attr(root, child3);\
+		root->children[4] = child4;\
+		set_attr(root, child4);\
+		root->children[5] = child5;\
+		set_attr(root, child5);\
+
+	#define FORM_SUBTREE_7(root, root_type, child0, child1, child2, child3, child4, child5, child6)\
+		root = create_NT(root_type);\
+		allo_child(7, root);\
+		root->children[0] = child0;\
+		set_attr(root, child0);\
+		root->children[1] = child1;\
+		set_attr(root, child1);\
+		root->children[2] = child2;\
+		set_attr(root, child2);\
+		root->children[3] = child3;\
+		set_attr(root, child3);\
+		root->children[4] = child4;\
+		set_attr(root, child4);\
+		root->children[5] = child5;\
+		set_attr(root, child5);\
+		root->children[6] = child6;\
+		set_attr(root, child6);\
+
+
 
 #endif // PARSER_TREE_H
