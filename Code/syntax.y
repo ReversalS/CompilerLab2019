@@ -2,9 +2,9 @@
     /* ... */
     #include "lex.yy.c"
     #include "parser_tree.h"
-    
+
     int yyerror(const char*);
-        
+    int yylex(void);
 %}
 // %define api.value.type { struct Node* }
 /* declared token */
@@ -44,7 +44,7 @@ Program: ExtDefList {
         global_root = $$;
     };
 ExtDefList: ExtDef ExtDefList   { FORM_SUBTREE_2($$,EXTDEFLIST,$1,$2) }
-    | /* empty */
+    | /* empty */               {$$ = create_EP();}
     ;
 ExtDef: Specifier ExtDecList SEMI   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
     | Specifier SEMI    { FORM_SUBTREE_2($$,EXTDEF,$1,$2); }
@@ -55,14 +55,14 @@ ExtDecList: VarDec  { FORM_SUBTREE_1($$,EXTDECLIST,$1); }
     ;
 
 /* Specifiers */
-Specifier: TYPE { FORM_SUBTREE_1($$,SPECIFIER,$1); } 
+Specifier: TYPE { FORM_SUBTREE_1($$,SPECIFIER,$1); }
     | StructSpecifier   { FORM_SUBTREE_1($$,SPECIFIER,$1); }
     ;
 StructSpecifier: STRUCT OptTag LC DefList RC    { FORM_SUBTREE_5($$,STRUCTSPECIFIER,$1,$2,$3,$4,$5) }
     | STRUCT Tag    { FORM_SUBTREE_2($$,STRUCTSPECIFIER,$1,$2) }
     ;
 OptTag: ID  { FORM_SUBTREE_1($$,OPTTAG,$1) }
-    | /* empty */
+    | /* empty */ {$$ = create_EP();}
     ;
 Tag: ID { FORM_SUBTREE_1($$,TAG,$1) }
     ;
@@ -84,7 +84,7 @@ ParamDec: Specifier VarDec  { FORM_SUBTREE_2($$,PARAMDEC,$1,$2) }
 CompSt: LC DefList StmtList RC  { FORM_SUBTREE_4($$,COMPST,$1,$2,$3,$4) }
     ;
 StmtList: Stmt StmtList  { FORM_SUBTREE_2($$,STMTLIST,$1,$2) }
-    | /* empty */
+    | /* empty */        {$$ = create_EP();}
     ;
 Stmt: Exp SEMI  { FORM_SUBTREE_2($$,STMT,$1,$2) }
     | CompSt  { FORM_SUBTREE_1($$,STMT,$1) }
@@ -98,7 +98,7 @@ Stmt: Exp SEMI  { FORM_SUBTREE_2($$,STMT,$1,$2) }
 
 /* Local Definitions */
 DefList: Def DefList    { FORM_SUBTREE_2($$,DEFLIST,$1,$2) }
-    | /* empty */
+    | /* empty */       {$$ = create_EP();}
     ;
 Def: Specifier DecList SEMI { FORM_SUBTREE_3($$,DEF,$1,$2,$3) }
     ;

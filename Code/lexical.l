@@ -7,8 +7,8 @@
     #include"syntax.tab.h"
     #include"parser_tree.h"
 
+    extern int lexical_error;
 
-    
     // lexeme location
     int yycolumn = 1;
     int first_column = 1;
@@ -64,7 +64,6 @@ WS {ws}+
 NEWLINE {newline}
 
 %%
-    init_st();
 
 "//"                        {BEGIN(line_comment);}
 
@@ -128,7 +127,7 @@ NEWLINE {newline}
     return INT;
 }
 
-{BADINT}        {invalid_id(yytext, yylineno);}
+{BADINT}        {invalid_id(yytext, yylineno); lexical_error = 1;}
 
 {FLOAT} {
     nv.fval = atof(yytext);
@@ -136,7 +135,7 @@ NEWLINE {newline}
     return FLOAT;
 }
 
-{BADFLOAT}      {invalid_id(yytext, yylineno);}
+{BADFLOAT}      {invalid_id(yytext, yylineno); lexical_error = 1;}
 
 {ID} {
     yylval = create_ID(yytext, yylineno, first_column);
@@ -273,7 +272,7 @@ NEWLINE {newline}
 
 {NEWLINE}       {yycolumn = 1;}
 
-.               {unknown_char(*yytext, yylineno);}
+.               {unknown_char(*yytext, yylineno); lexical_error = 1;}
 
 %%
 

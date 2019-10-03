@@ -9,6 +9,7 @@ void init_st()
 {
     memset(Symbol_table.table, 0, MAX_ST_ENTRY * sizeof(struct item));
     Symbol_table.index = 0;
+    // printf("Init symbol table.");
 }
 
 // 添加条目，返回 index，若表中已有则返回已有条目的 index

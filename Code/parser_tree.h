@@ -10,6 +10,7 @@
 
 // a global root for parser tree
 struct Node* global_root;
+int lexical_error;
 
 // bison?
 // 为节点的子数组分配空间
@@ -102,7 +103,6 @@ struct Node* create_ID(char* str, int line, int column);
 		root->children[0] = child0;\
 		set_attr(root, child0);\
 		root->children[1] = child1;\
-		set_attr(root, child1);\
 
 	#define FORM_SUBTREE_3(root, root_type, child0, child1, child2)\
 		root = create_NT(root_type);\
@@ -110,9 +110,7 @@ struct Node* create_ID(char* str, int line, int column);
 		root->children[0] = child0;\
 		set_attr(root, child0);\
 		root->children[1] = child1;\
-		set_attr(root, child1);\
 		root->children[2] = child2;\
-		set_attr(root, child2);\
 
 	#define FORM_SUBTREE_4(root, root_type, child0, child1, child2, child3)\
 		root = create_NT(root_type);\
@@ -120,11 +118,8 @@ struct Node* create_ID(char* str, int line, int column);
 		root->children[0] = child0;\
 		set_attr(root, child0);\
 		root->children[1] = child1;\
-		set_attr(root, child1);\
 		root->children[2] = child2;\
-		set_attr(root, child2);\
 		root->children[3] = child3;\
-		set_attr(root, child3);\
 
 	#define FORM_SUBTREE_5(root, root_type, child0, child1, child2, child3, child4)\
 		root = create_NT(root_type);\
@@ -132,13 +127,9 @@ struct Node* create_ID(char* str, int line, int column);
 		root->children[0] = child0;\
 		set_attr(root, child0);\
 		root->children[1] = child1;\
-		set_attr(root, child1);\
 		root->children[2] = child2;\
-		set_attr(root, child2);\
 		root->children[3] = child3;\
-		set_attr(root, child3);\
 		root->children[4] = child4;\
-		set_attr(root, child4);\
 
 	#define FORM_SUBTREE_6(root, root_type, child0, child1, child2, child3, child4, child5)\
 		root = create_NT(root_type);\
@@ -146,15 +137,10 @@ struct Node* create_ID(char* str, int line, int column);
 		root->children[0] = child0;\
 		set_attr(root, child0);\
 		root->children[1] = child1;\
-		set_attr(root, child1);\
 		root->children[2] = child2;\
-		set_attr(root, child2);\
 		root->children[3] = child3;\
-		set_attr(root, child3);\
 		root->children[4] = child4;\
-		set_attr(root, child4);\
 		root->children[5] = child5;\
-		set_attr(root, child5);\
 
 	#define FORM_SUBTREE_7(root, root_type, child0, child1, child2, child3, child4, child5, child6)\
 		root = create_NT(root_type);\
@@ -162,18 +148,11 @@ struct Node* create_ID(char* str, int line, int column);
 		root->children[0] = child0;\
 		set_attr(root, child0);\
 		root->children[1] = child1;\
-		set_attr(root, child1);\
 		root->children[2] = child2;\
-		set_attr(root, child2);\
 		root->children[3] = child3;\
-		set_attr(root, child3);\
 		root->children[4] = child4;\
-		set_attr(root, child4);\
 		root->children[5] = child5;\
-		set_attr(root, child5);\
 		root->children[6] = child6;\
-		set_attr(root, child6);\
-
 
 
 #endif // PARSER_TREE_H

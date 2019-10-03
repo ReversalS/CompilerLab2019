@@ -1,5 +1,8 @@
 #include "parser_tree.h"
 
+int lexical_error = 0;
+struct Node* global_root = NULL;
+
 char* nt_type_dict[] = {
     "Program",
     "ExtDefList",
@@ -181,10 +184,13 @@ void deconstruct(struct Node* p)
 // 递归打印
 void print_tree(struct Node* p, int level)
 {
+    if(p->symbol_type == EPSILON){
+        return ;
+    }
     char str[MAX_ID_LENGTH];
     memset(str, 0, MAX_ID_LENGTH * sizeof(char));
     for (int i = 0; i < level; i++) {
-        printf("\t");
+        printf("    ");
     }
     switch (p->symbol_type) {
     case NT:

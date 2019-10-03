@@ -21,7 +21,7 @@ struct symbol_table {
     int index;
 };
 
-extern struct symbol_table Symbol_table;
+struct symbol_table Symbol_table;
 
 // 初始化
 void init_st();
