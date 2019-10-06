@@ -190,7 +190,7 @@ void print_tree(struct Node* p, int level)
     char str[MAX_ID_LENGTH];
     memset(str, 0, MAX_ID_LENGTH * sizeof(char));
     for (int i = 0; i < level; i++) {
-        printf("    ");
+        printf("  ");
     }
     switch (p->symbol_type) {
     case NT:

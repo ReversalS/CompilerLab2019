@@ -126,17 +126,17 @@ NEWLINE {newline}
     yylval = create_T(INT_E, nv, yylineno, first_column);
     return INT;
 }
-
+    /*
 {BADINT}        {invalid_id(yytext, yylineno); lexical_error = 1;}
-
+    */
 {FLOAT} {
     nv.fval = atof(yytext);
     yylval = create_T(FLOAT_E, nv, yylineno, first_column);
     return FLOAT;
 }
-
+    /*
 {BADFLOAT}      {invalid_id(yytext, yylineno); lexical_error = 1;}
-
+    */
 {ID} {
     yylval = create_ID(yytext, yylineno, first_column);
     return ID;
@@ -281,9 +281,9 @@ void output(int lineno, char* type, char* value){
 }
 
 void unknown_char(char c, int lineno){
-    printf("Error type A at line %d: Mysterious character \"%c\"\n", lineno, c);
+    printf("Error type A at Line %d: Mysterious character \"%c\"\n", lineno, c);
 }
 
 void invalid_id(char* str, int lineno){
-    printf("Error type A at line %d: invalid identifier \"%s\"\n", lineno, str);
+    printf("Error type A at Line %d: invalid identifier \"%s\"\n", lineno, str);
 }

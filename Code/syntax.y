@@ -82,6 +82,7 @@ ParamDec: Specifier VarDec  { FORM_SUBTREE_2($$,PARAMDEC,$1,$2) }
 
 /* Statements */
 CompSt: LC DefList StmtList RC  { FORM_SUBTREE_4($$,COMPST,$1,$2,$3,$4) }
+    | error RC      {}
     ;
 StmtList: Stmt StmtList  { FORM_SUBTREE_2($$,STMTLIST,$1,$2) }
     | /* empty */        {$$ = create_EP();}
@@ -94,6 +95,7 @@ Stmt: Exp SEMI  { FORM_SUBTREE_2($$,STMT,$1,$2) }
     | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE   { FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5) }
     | IF LP Exp RP Stmt ELSE Stmt   { FORM_SUBTREE_7($$,STMT,$1,$2,$3,$4,$5,$6,$7) }
     | WHILE LP Exp RP Stmt  { FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5) }
+    | error SEMI    {}
     ;
 
 /* Local Definitions */
@@ -128,6 +130,8 @@ Exp: Exp ASSIGNOP Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | ID    { FORM_SUBTREE_1($$,EXP,$1) }
     | INT   { FORM_SUBTREE_1($$,EXP,$1) }
     | FLOAT { FORM_SUBTREE_1($$,EXP,$1) }
+    | error RP {}
+    | error RB {}
     ;
 Args: Exp COMMA Args    { FORM_SUBTREE_3($$,ARGS,$1,$2,$3) }
     | Exp   { FORM_SUBTREE_1($$,ARGS,$1) }
