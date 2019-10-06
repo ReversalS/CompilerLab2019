@@ -4,6 +4,7 @@
     #include<string.h>
     #include<stdlib.h>
     #define YYSTYPE struct Node*
+    #define YYDEBUG 1
     #include"syntax.tab.h"
     #include"parser_tree.h"
 
@@ -194,6 +195,12 @@ NEWLINE {newline}
     nv.other = PLUS_E;
     yylval = create_T(OTHER_E, nv, yylineno, first_column);
     return PLUS;
+}
+
+{MINUS} {
+    nv.other = MINUS_E;
+    yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    return MINUS;
 }
 
 {STAR} {

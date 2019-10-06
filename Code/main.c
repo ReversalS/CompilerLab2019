@@ -7,19 +7,21 @@ int yyerror(char* msg);
 int syntax_error = 0;
 extern int lexical_error;
 extern int yylineno;
+extern int yydebug;
 
 int main(int argc, char const* argv[])
 {
     init_st();
-    if(argc <= 1){
+    if (argc <= 1) {
         return 1;
     }
     FILE* f = fopen(argv[1], "r");
-    if(!f){
+    if (!f) {
         perror(argv[1]);
         return 1;
     }
     yyrestart(f);
+    // yydebug = 1;
     yyparse();
     // printf("yyparse() returns %d\n", ret);
     if (syntax_error == 0 && lexical_error == 0)
@@ -27,8 +29,9 @@ int main(int argc, char const* argv[])
     return 0;
 }
 
-int yyerror(char* msg){
-    printf("Error type B at Line %d: xxx\n", yylineno);
+int yyerror(char* msg)
+{
+    printf("Error type B at Line %d: %s\n", yylineno, msg);
     syntax_error = -1;
     return 0;
 }

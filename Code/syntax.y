@@ -6,6 +6,7 @@
     int yyerror(const char*);
     int yylex(void);
 %}
+%error-verbose
 // %define api.value.type { struct Node* }
 /* declared token */
 %token INT
@@ -49,6 +50,7 @@ ExtDefList: ExtDef ExtDefList   { FORM_SUBTREE_2($$,EXTDEFLIST,$1,$2) }
 ExtDef: Specifier ExtDecList SEMI   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
     | Specifier SEMI    { FORM_SUBTREE_2($$,EXTDEF,$1,$2); }
     | Specifier FunDec CompSt   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
+    | error SEMI    {}
     ;
 ExtDecList: VarDec  { FORM_SUBTREE_1($$,EXTDECLIST,$1); }
     | VarDec COMMA ExtDecList   { FORM_SUBTREE_3($$,EXTDECLIST,$1,$2,$3); }
@@ -70,9 +72,11 @@ Tag: ID { FORM_SUBTREE_1($$,TAG,$1) }
 /* Declarators */
 VarDec: ID  { FORM_SUBTREE_1($$,VARDEC,$1) }
     | VarDec LB INT RB  { FORM_SUBTREE_4($$,VARDEC,$1,$2,$3,$4) }
+    | error RB {}
     ;
 FunDec: ID LP VarList RP  { FORM_SUBTREE_4($$,FUNDEC,$1,$2,$3,$4) }
     | ID LP RP  { FORM_SUBTREE_3($$,FUNDEC,$1,$2,$3) }
+    | error RP {}
     ;
 VarList: ParamDec COMMA VarList  { FORM_SUBTREE_3($$,VARLIST,$1,$2,$3) }
     | ParamDec  { FORM_SUBTREE_1($$,VARLIST,$1) }
@@ -96,6 +100,7 @@ Stmt: Exp SEMI  { FORM_SUBTREE_2($$,STMT,$1,$2) }
     | IF LP Exp RP Stmt ELSE Stmt   { FORM_SUBTREE_7($$,STMT,$1,$2,$3,$4,$5,$6,$7) }
     | WHILE LP Exp RP Stmt  { FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5) }
     | error SEMI    {}
+    | error RP {}
     ;
 
 /* Local Definitions */
@@ -130,8 +135,6 @@ Exp: Exp ASSIGNOP Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | ID    { FORM_SUBTREE_1($$,EXP,$1) }
     | INT   { FORM_SUBTREE_1($$,EXP,$1) }
     | FLOAT { FORM_SUBTREE_1($$,EXP,$1) }
-    | error RP {}
-    | error RB {}
     ;
 Args: Exp COMMA Args    { FORM_SUBTREE_3($$,ARGS,$1,$2,$3) }
     | Exp   { FORM_SUBTREE_1($$,ARGS,$1) }
