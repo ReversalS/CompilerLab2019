@@ -79,13 +79,6 @@ struct Node* create_ID(char* str, int line, int column);
 
 
 /* macros that help to efficiently build trees */
-    /* Not Possible since Macro-expansion will not be performed in Bison Actions */
-    // #define FORM_SUBTREE(n, root_type)\
-    //     $$ = create_NT(root_type);\
-    //     allo_child(n, $$);\
-    //     for (int i = 1; i <= n; i++)\
-    //         root->children[i-1] = $##i;\
-    //         set_attr($$, $##i);
 
 	#define FORM_SUBTREE_0(root, root_type)\
 		root = create_NT(root_type);\

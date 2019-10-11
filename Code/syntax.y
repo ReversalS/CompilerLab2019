@@ -50,6 +50,7 @@ ExtDef: Specifier ExtDecList SEMI   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
     | Specifier FunDec CompSt   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
     | error SEMI    {$$ = create_EP();}
     | Specifier error SEMI {$$ = create_EP();}
+    | Specifier error Specifier FunDec CompSt   { $$ = create_EP(); }
     ;
 ExtDecList: VarDec  { FORM_SUBTREE_1($$,EXTDECLIST,$1); }
     | VarDec COMMA ExtDecList   { FORM_SUBTREE_3($$,EXTDECLIST,$1,$2,$3); }
@@ -77,7 +78,6 @@ VarDec: ID  { FORM_SUBTREE_1($$,VARDEC,$1) }
 FunDec: ID LP VarList RP  { FORM_SUBTREE_4($$,FUNDEC,$1,$2,$3,$4) }
     | ID LP RP  { FORM_SUBTREE_3($$,FUNDEC,$1,$2,$3) }
     | ID LP error RP {$$ = create_EP();}
-    | ID LP error {$$ = create_EP();}
     ;
 VarList: ParamDec COMMA VarList  { FORM_SUBTREE_3($$,VARLIST,$1,$2,$3) }
     | ParamDec  { FORM_SUBTREE_1($$,VARLIST,$1) }
