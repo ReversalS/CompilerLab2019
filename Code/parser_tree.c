@@ -213,7 +213,7 @@ void print_tree(struct Node* p, int level)
             printf("TYPE: %s\n", type_dict[(int)p->node_value.type]);
             break;
         case RELOP_E:
-            printf("%s\n", relop_dict[(int)p->node_value.relop]);
+            printf("RELOP\n");
             break;
         case KEYWORD_E:
             printf("%s\n", keyword_dict[(int)p->node_value.keyword]);

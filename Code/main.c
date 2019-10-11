@@ -7,7 +7,7 @@ int yyerror(char* msg);
 int syntax_error = 0;
 extern int lexical_error;
 extern int yylineno;
-extern int yydebug;
+// extern int yydebug;
 
 int main(int argc, char const* argv[])
 {
@@ -21,17 +21,19 @@ int main(int argc, char const* argv[])
         return 1;
     }
     yyrestart(f);
-    yydebug = 1;
+    // yydebug = 1;
     yyparse();
     // printf("yyparse() returns %d\n", ret);
-    if (syntax_error == 0 && lexical_error == 0)
+    if (syntax_error == 0 && lexical_error == 0){
         print_tree(global_root, 0);
+    }
+    deconstruct(global_root);
     return 0;
 }
 
 int yyerror(char* msg)
 {
     printf("Error type B at Line %d: %s\n", yylineno, msg);
-    syntax_error = -1;
+    syntax_error = 1;
     return 0;
 }

@@ -48,12 +48,12 @@ ExtDefList: ExtDef ExtDefList   { FORM_SUBTREE_2($$,EXTDEFLIST,$1,$2) }
 ExtDef: Specifier ExtDecList SEMI   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
     | Specifier SEMI    { FORM_SUBTREE_2($$,EXTDEF,$1,$2); }
     | Specifier FunDec CompSt   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
-    | error SEMI    {}
-    | Specifier error SEMI {}
+    | error SEMI    {$$ = create_EP();}
+    | Specifier error SEMI {$$ = create_EP();}
     ;
 ExtDecList: VarDec  { FORM_SUBTREE_1($$,EXTDECLIST,$1); }
     | VarDec COMMA ExtDecList   { FORM_SUBTREE_3($$,EXTDECLIST,$1,$2,$3); }
-    | error COMMA ExtDecList {}
+    | error COMMA ExtDecList {$$ = create_EP();}
     ;
 
 /* Specifiers */
@@ -72,22 +72,21 @@ Tag: ID { FORM_SUBTREE_1($$,TAG,$1) }
 /* Declarators */
 VarDec: ID  { FORM_SUBTREE_1($$,VARDEC,$1) }
     | VarDec LB INT RB  { FORM_SUBTREE_4($$,VARDEC,$1,$2,$3,$4) }
-    | VarDec LB error RB {}
+    | VarDec LB error RB {$$ = create_EP();}
     ;
 FunDec: ID LP VarList RP  { FORM_SUBTREE_4($$,FUNDEC,$1,$2,$3,$4) }
     | ID LP RP  { FORM_SUBTREE_3($$,FUNDEC,$1,$2,$3) }
-    | ID LP error RP {}
+    | ID LP error RP {$$ = create_EP();}
     ;
 VarList: ParamDec COMMA VarList  { FORM_SUBTREE_3($$,VARLIST,$1,$2,$3) }
     | ParamDec  { FORM_SUBTREE_1($$,VARLIST,$1) }
-    | error COMMA VarList {}
+    | error COMMA VarList {$$ = create_EP();}
     ;
 ParamDec: Specifier VarDec  { FORM_SUBTREE_2($$,PARAMDEC,$1,$2) }
     ;
 
 /* Statements */
 CompSt: LC DefList StmtList RC  { FORM_SUBTREE_4($$,COMPST,$1,$2,$3,$4) }
-    | error RC {}
     ;
 StmtList: Stmt StmtList  { FORM_SUBTREE_2($$,STMTLIST,$1,$2) }
     | /* empty */        {$$ = create_EP();}
@@ -96,12 +95,10 @@ Stmt: Exp SEMI  { FORM_SUBTREE_2($$,STMT,$1,$2) }
     | CompSt  { FORM_SUBTREE_1($$,STMT,$1) }
     | RETURN Exp SEMI   { FORM_SUBTREE_3($$,STMT,$1,$2,$3) }
     | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE   { FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5) }
-    | IF error Stmt %prec LOWER_THAN_ELSE {}
     | IF LP Exp RP Stmt ELSE Stmt   { FORM_SUBTREE_7($$,STMT,$1,$2,$3,$4,$5,$6,$7) }
-    | IF error Stmt ELSE Stmt {}
     | WHILE LP Exp RP Stmt  { FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5) }
-    | WHILE error Stmt {}
-    | error SEMI    {}
+    | error SEMI    {$$ = create_EP();}
+    | error {$$ = create_EP();}
     ;
 
 /* Local Definitions */
@@ -109,11 +106,11 @@ DefList: Def DefList    { FORM_SUBTREE_2($$,DEFLIST,$1,$2) }
     | /* empty */       {$$ = create_EP();}
     ;
 Def: Specifier DecList SEMI { FORM_SUBTREE_3($$,DEF,$1,$2,$3) }
-    | Specifier error SEMI {}
+    | Specifier error SEMI {$$ = create_EP();}
     ;
 DecList: Dec    { FORM_SUBTREE_1($$,DECLIST,$1) }
     | Dec COMMA DecList { FORM_SUBTREE_3($$,DECLIST,$1,$2,$3) }
-    | error COMMA DecList {}
+    | error COMMA DecList {$$ = create_EP();}
     ;
 Dec: VarDec { FORM_SUBTREE_1($$,DEC,$1) }
     | VarDec ASSIGNOP Exp   { FORM_SUBTREE_3($$,DEC,$1,$2,$3) }
@@ -129,14 +126,14 @@ Exp: Exp ASSIGNOP Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | Exp STAR Exp  { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | Exp DIV Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | LP Exp RP { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | LP error RP
+    | LP error RP {$$ = create_EP();}
     | MINUS Exp { FORM_SUBTREE_2($$,EXP,$1,$2) }
     | NOT Exp   { FORM_SUBTREE_2($$,EXP,$1,$2) }
     | ID LP Args RP { FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4) }
     | ID LP RP  { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | ID LP error RP {}
+    | ID LP error RP {$$ = create_EP();}
     | Exp LB Exp RB { FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4) }
-    | Exp LB error RB {}
+    | Exp LB error RB {$$ = create_EP();}
     | Exp DOT ID    { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | ID    { FORM_SUBTREE_1($$,EXP,$1) }
     | INT   { FORM_SUBTREE_1($$,EXP,$1) }
@@ -144,5 +141,5 @@ Exp: Exp ASSIGNOP Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     ;
 Args: Exp COMMA Args    { FORM_SUBTREE_3($$,ARGS,$1,$2,$3) }
     | Exp   { FORM_SUBTREE_1($$,ARGS,$1) }
-    | error COMMA Args {}
+    | error COMMA Args {$$ = create_EP();}
     ;
