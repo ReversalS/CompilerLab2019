@@ -11,7 +11,6 @@ extern int yylineno;
 
 int main(int argc, char const* argv[])
 {
-    init_st();
     if (argc <= 1) {
         return 1;
     }
@@ -23,7 +22,6 @@ int main(int argc, char const* argv[])
     yyrestart(f);
     // yydebug = 1;
     yyparse();
-    // printf("yyparse() returns %d\n", ret);
     if (syntax_error == 0 && lexical_error == 0){
         print_tree(global_root, 0);
     } else if (global_root != NULL){

@@ -120,7 +120,7 @@ union NODE_VALUE {
     enum KEYWORD keyword; // 节点为关键字时的值
     int ival; // 节点为 int 型常量时常量字面的值
     float fval; // 节点为 float 型常量时常量字面的值
-    int index; // 节点为 id 时对应 id 在符号表中的表项 index
+    char* id;
     int nt; // 当节点为非终结符时的值，默认 -1
     int ep; // 当节点为空串时的值，默认为 -1
 };

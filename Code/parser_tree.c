@@ -139,7 +139,11 @@ struct Node* create_ID(char* str, int line, int column)
     struct location loc;
     st = T;
     nt.t_type = ID_E;
-    nv.index = add_entry(str, line, column);
+
+    nv.id = (char*)malloc(strlen(str) + 1);
+    strcpy(nv.id, str);
+
+    // nv.index = add_entry(str, line, column);
     loc.line = line;
     loc.column = column;
     return create_node(st, nt, nv, loc);
@@ -169,6 +173,9 @@ void deconstruct(struct Node* p)
 {
     if (p->child_num == -1) {
         // no children
+        if(p->symbol_type == T && p->node_type.t_type == ID_E){
+            free(p->node_value.id);
+        }
         free(p);
         return;
     } else {
@@ -176,6 +183,9 @@ void deconstruct(struct Node* p)
             deconstruct(p->children[i]);
         }
         free(p->children);
+        if(p->symbol_type == T && p->node_type.t_type == ID_E){
+            free(p->node_value.id);
+        }
         free(p);
         return;
     }
@@ -187,8 +197,6 @@ void print_tree(struct Node* p, int level)
     if(p->symbol_type == EPSILON){
         return ;
     }
-    char str[MAX_ID_LENGTH];
-    memset(str, 0, MAX_ID_LENGTH * sizeof(char));
     for (int i = 0; i < level; i++) {
         printf("  ");
     }
@@ -205,9 +213,7 @@ void print_tree(struct Node* p, int level)
             printf("FLOAT: %f\n", p->node_value.fval);
             break;
         case ID_E:
-            get_id(p->node_value.index, str);
-            printf("ID: %s\n", str);
-            memset(str, 0, MAX_ID_LENGTH * sizeof(char));
+            printf("ID: %s\n", p->node_value.id);
             break;
         case TYPE_E:
             printf("TYPE: %s\n", type_dict[(int)p->node_value.type]);
