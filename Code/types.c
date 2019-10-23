@@ -3,14 +3,14 @@
 int eq(Type* t1, Type* t2)
 {
     if (t1->kind != t2->kind) {
-        return 0;
+        return FALSE;
     } else {
         switch (t1->kind) {
         case BASIC:
             if (t1->u.basic == t2->u.basic) {
-                return 1;
+                return TRUE;
             } else {
-                return 0;
+                return FALSE;
             }
             break;
         case ARRAY:
@@ -18,9 +18,9 @@ int eq(Type* t1, Type* t2)
             break;
         case STRUCTURE:
             if (strcmp(t1->u.structure.name, t2->u.structure.name) == 0) {
-                return 1;
+                return TRUE;
             } else {
-                return 0;
+                return FALSE;
             }
             break;
         }
@@ -178,7 +178,7 @@ void print_type(Type* p, int level, int newline)
 {
     switch (p->kind) {
     case BASIC:
-        if (p->u.basic == INT) {
+        if (p->u.basic == INT_B) {
             printf("int");
         } else {
             printf("float");

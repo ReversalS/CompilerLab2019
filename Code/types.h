@@ -4,16 +4,19 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "errors.h"
 
 typedef struct Type Type;
 typedef struct FieldList FieldList;
+#define TRUE 1
+#define FALSE 0
 
 enum KIND{
     BASIC, ARRAY, STRUCTURE
 };
 
 enum B_TYPE{
-    INT, FLOAT
+    INT_B, FLOAT_B
 };
 
 struct Type{

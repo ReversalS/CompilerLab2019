@@ -9,19 +9,21 @@
 
 
 // a global root for parser tree
-struct Node* global_root;
+
+Node* global_root;
 int lexical_error;
+extern int nest_depth;
 
 // bison?
 // 为节点的子数组分配空间
 // TODO: 添加再分配功能？Free 原有 malloc 新空间
-void allo_child(int num, struct Node* p);
+void allo_child(int num, Node* p);
 // parent的行号为第一个子节点的行号
-void set_attr(struct Node* parent, struct Node* child);
+void set_attr(Node* parent, Node* child);
 // 析构语法树，归还内存
-void deconstruct(struct Node* p);
+void deconstruct(Node* p);
 // 递归打印
-void print_tree(struct Node* p, int level);
+void print_tree(Node* p, int level);
 
 /*
 example:
@@ -35,9 +37,9 @@ EXP
 
 
     // EXP -> ID
-    // FLEX: construct Nodes and return pointers p5, p4
-    struct Node* p4 = create_ID("i", 4, 9);
-    struct Node* p5 = create_NT(EXP);
+    // FLEX: conNodes and return pointers p5, p4
+    Node* p4 = create_ID("i", 4, 9);
+    Node* p5 = create_NT(EXP);
 
     // BISON: build the parser tree Bottom up
     allo_child(1, p5);
@@ -46,18 +48,18 @@ EXP
 
     // PLUS
     nv.other = PLUS;
-    struct Node* p6 = create_T(OTHER, nv, 4, 11);
+    Node* p6 = create_T(OTHER, nv, 4, 11);
 
     // EXP -> INT
     nv.ival = 1;
-    struct Node* p7 = create_T(INT, nv, 4, 13);
-    struct Node* p8 = create_NT(EXP);
+    Node* p7 = create_T(INT, nv, 4, 13);
+    Node* p8 = create_NT(EXP);
     allo_child(1, p8);
     p8->children[0] = p7;
     set_attr(p8, p7);
 
     // EXP -> EXP PLUS EXP
-    struct Node* p9 = create_NT(EXP);
+    Node* p9 = create_NT(EXP);
     allo_child(3, p9);
     p9->children[0] = p5;
     p9->children[1] = p6;
@@ -67,15 +69,15 @@ EXP
 
 // flex
 // 创建节点，不会被用户显式调用
-struct Node* create_node(enum SYMBOL_TYPE st, union NODE_TYPE nt, union NODE_VALUE nv, struct location loc);
+Node* create_node(enum SYMBOL_TYPE st, union NODE_TYPE nt, union NODE_VALUE nv, Location loc);
 // 创建空串
-struct Node* create_EP();
+Node* create_EP();
 // 创建非终结符
-struct Node* create_NT(enum NT_TYPE nt_type);
+Node* create_NT(enum NT_TYPE nt_type);
 // 创建终结符（非 id）
-struct Node* create_T(enum T_TYPE t_type, union NODE_VALUE nv, int line, int column);
+Node* create_T(enum T_TYPE t_type, union NODE_VALUE nv, int line, int column);
 // 创建 id
-struct Node* create_ID(char* str, int line, int column);
+Node* create_ID(char* str, int line, int column);
 
 
 /* macros that help to efficiently build trees */

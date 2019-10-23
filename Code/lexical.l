@@ -15,6 +15,8 @@
     int first_column = 1;
     int last_column = 1;
 
+    int nest_depth = 0;
+
     #define YY_USER_ACTION first_column = yycolumn; last_column = yycolumn + yyleng - 1; yycolumn += yyleng;
 
     union NODE_VALUE nv;
@@ -266,12 +268,14 @@ NEWLINE {newline}
 {LC} {
     nv.other = LC_E;
     yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    nest_depth++;
     return LC;
 }
 
 {RC} {
     nv.other = RC_E;
     yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    nest_depth--;
     return RC;
 }
 

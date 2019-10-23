@@ -1,6 +1,9 @@
 #ifndef ENUMS_H
 #define ENUMS_H
 
+typedef struct Node Node;
+typedef struct Location Location;
+
 // HIGH LEVEL ENUM
 // 标记节点是非终结符（NT）或终结符（T）或空串（\epsilon）
 enum SYMBOL_TYPE {
@@ -126,7 +129,7 @@ union NODE_VALUE {
 };
 
 // 用于存储节点在源代码中的开始位置
-struct location {
+struct Location {
     int line;
     int column;
 };
@@ -136,7 +139,7 @@ struct Node {
     enum SYMBOL_TYPE symbol_type; // 终结符/非终结符
     union NODE_TYPE node_type; // 具体的类型
     union NODE_VALUE node_value; // 词法单元的值
-    struct location loc; //出现位置
+    struct Location loc; //出现位置
     int child_num; // 子节点数量
     struct Node** children; // 子节点数组
 };

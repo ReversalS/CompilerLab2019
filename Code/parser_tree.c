@@ -1,7 +1,7 @@
 #include "parser_tree.h"
 
 int lexical_error = 0;
-struct Node* global_root = NULL;
+Node* global_root = NULL;
 
 char* nt_type_dict[] = {
     "Program",
@@ -70,9 +70,9 @@ char* keyword_dict[] = {
 };
 
 // 创建节点，不会被用户显式调用
-struct Node* create_node(enum SYMBOL_TYPE st, union NODE_TYPE nt, union NODE_VALUE nv, struct location loc)
+Node* create_node(enum SYMBOL_TYPE st, union NODE_TYPE nt, union NODE_VALUE nv, Location loc)
 {
-    struct Node* p = (struct Node*)malloc(sizeof(struct Node));
+    Node* p = (Node*)malloc(sizeof(Node));
     if (p == NULL) {
         perror("malloc failed.\n");
         abort();
@@ -88,12 +88,12 @@ struct Node* create_node(enum SYMBOL_TYPE st, union NODE_TYPE nt, union NODE_VAL
 }
 
 // 创建空串
-struct Node* create_EP()
+Node* create_EP()
 {
     enum SYMBOL_TYPE st;
     union NODE_TYPE nt;
     union NODE_VALUE nv;
-    struct location loc;
+    Location loc;
     st = EPSILON;
     nt.ep = -1;
     nv.ep = -1;
@@ -103,12 +103,12 @@ struct Node* create_EP()
 }
 
 // 创建非终结符
-struct Node* create_NT(enum NT_TYPE nt_type)
+Node* create_NT(enum NT_TYPE nt_type)
 {
     enum SYMBOL_TYPE st;
     union NODE_TYPE nt;
     union NODE_VALUE nv;
-    struct location loc;
+    Location loc;
     st = NT;
     nt.nt_type = nt_type;
     nv.nt = -1;
@@ -118,11 +118,11 @@ struct Node* create_NT(enum NT_TYPE nt_type)
 }
 
 // 创建终结符（非 id）
-struct Node* create_T(enum T_TYPE t_type, union NODE_VALUE nv, int line, int column)
+Node* create_T(enum T_TYPE t_type, union NODE_VALUE nv, int line, int column)
 {
     enum SYMBOL_TYPE st;
     union NODE_TYPE nt;
-    struct location loc;
+    Location loc;
     st = T;
     nt.t_type = t_type;
     loc.line = line;
@@ -131,12 +131,12 @@ struct Node* create_T(enum T_TYPE t_type, union NODE_VALUE nv, int line, int col
 }
 
 // 创建 id
-struct Node* create_ID(char* str, int line, int column)
+Node* create_ID(char* str, int line, int column)
 {
     enum SYMBOL_TYPE st;
     union NODE_TYPE nt;
     union NODE_VALUE nv;
-    struct location loc;
+    Location loc;
     st = T;
     nt.t_type = ID_E;
 
@@ -151,25 +151,25 @@ struct Node* create_ID(char* str, int line, int column)
 
 // 为节点的子数组分配空间
 // TODO: 添加再分配功能？Free 原有 malloc 新空间
-void allo_child(int num, struct Node* p)
+void allo_child(int num, Node* p)
 {
     p->child_num = num;
-    p->children = (struct Node**)malloc(num * sizeof(struct Node*));
+    p->children = (Node**)malloc(num * sizeof(Node*));
     if (p->children == NULL) {
         perror("malloc failed.\n");
         abort();
     }
-    memset(p->children, 0, p->child_num * sizeof(struct Node*));
+    memset(p->children, 0, p->child_num * sizeof(Node*));
 }
 
 // parent的行号为第一个子节点的行号
-void set_attr(struct Node* parent, struct Node* child)
+void set_attr(Node* parent, Node* child)
 {
     parent->loc.line = child->loc.line;
 }
 
 // 析构语法树，归还内存
-void deconstruct(struct Node* p)
+void deconstruct(Node* p)
 {
     if (p->child_num == -1) {
         // no children
@@ -192,7 +192,7 @@ void deconstruct(struct Node* p)
 }
 
 // 递归打印
-void print_tree(struct Node* p, int level)
+void print_tree(Node* p, int level)
 {
     if(p->symbol_type == EPSILON){
         return ;
