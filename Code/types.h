@@ -2,57 +2,75 @@
 #define TYPES_H
 
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include "errors.h"
+#include <stdlib.h>
+
+#define TYPE_SET_SIZE 1024
 
 typedef struct Type Type;
-typedef struct FieldList FieldList;
-#define TRUE 1
-#define FALSE 0
+typedef struct VarList VarList;
+typedef enum BOOL BOOL;
 
-enum KIND{
-    BASIC, ARRAY, STRUCTURE
+int type_num;
+
+enum BASIC_TYPE{
+    INT_BASIC,
+    FLOAT_BASIC,
 };
 
-enum B_TYPE{
-    INT_B, FLOAT_B
+enum BOOL {
+    FALSE = 0, TRUE = 1
 };
 
 struct Type{
-    enum KIND kind;
+    enum {BASIC, ARRAY, STRUCTURE, FUNCTION} kind;
     union {
-        enum B_TYPE basic;
-        struct{
-            Type* elem;
+        enum BASIC_TYPE basic;
+        struct {
+            int elem;
             int size;
         } array;
         struct {
             char* name;
-            FieldList* fields;
+            VarList* fields;
         } structure;
+        struct {
+            char* name;
+            int return_type;
+            VarList* parameters;
+        } function;
     } u;
 };
 
-struct FieldList{
+struct VarList{
     char* name;
-    Type* type;
-    FieldList* next;
+    int type;
+    VarList* next;
 };
 
-int eq(Type* t1, Type* t2);
-void deconstruct_type(Type* p);
-void deconstruct_field(FieldList* p);
-void copy_type(Type** dest, Type* src);
-void copy_field(FieldList** dest, FieldList* src);
-void copy_name(char** dest, char* src);
+Type type_set[TYPE_SET_SIZE];
 
-Type* construct_basic(enum B_TYPE type);
-Type* construct_array(Type* base, int size);
-Type* construct_struct(char* name);
-void add_field(Type* base, char* name, Type* type);
+void init_type_set();
+void deconstruct_varlist(VarList* p);
+void deconstruct_set();
 
-void print_type(Type* p, int level, int newline);
-void print_array(Type* p, int level);
-void print_field(FieldList* p, int level);
+// for developer
+BOOL EQ(Type* t1, Type* t2);
+
+// for user
+BOOL eq(int t1, int t2);
+
+int exists(Type* t);
+
+int construct_basic(enum BASIC_TYPE type);
+int construct_array(int base, int size);
+int construct_struct(char* name);
+int construct_function(char* name, int return_type);
+int add_member(int base, char* name, int type);
+// int add_var(VarList* p, char* name, int type);
+
+void print_type(int type, int level, int newline);
+void print_array(int type, int level);
+void print_var(VarList* p, int level);
+
 #endif
