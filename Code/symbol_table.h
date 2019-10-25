@@ -1,6 +1,7 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -75,15 +76,43 @@
 /*------------------------------------------------
 * 建议的模块设计
 * Functional Style
+* define USE_RBTREE to switch from list to red-black tree
 -------------------------------------------------*/
 
 typedef struct Symbol Symbol;
 
+#define USE_RBTREE
+
 #ifdef USE_RBTREE
-// #include "rbtree.h"
-// typedef struct rb_root StackItem;
+
+    #include "rbtree.h"
+    typedef struct {
+        struct rb_root root;
+        int nodeCount;
+    } StackItem;
+
+    struct ExtendedRBnode {
+        struct rb_node rb_node;
+        char key[32];
+        int index;  //index in the symbol table
+    };
+
+    typedef struct ExtendedRBnode erb_node;
+
+    void constructRBTree(struct rb_root* root);
+    void destructRBTree(struct rb_root* root);
+    erb_node *searchNode(struct rb_root* root, char* key);
+    int insertNode(struct rb_root* root, char* key, int index);
+    void deleteNode(struct rb_root* root, char* key);
+    void printRBTree(struct rb_root* root);   //further designed
+
+    #define myfree(ptr) free(ptr)
+    #define truncate31(str) str[31]='\0'
+
 #else
-#include "list.h"
+
+    #include "list.h"
+
 #endif
 
 struct Symbol{
@@ -104,20 +133,23 @@ struct Symbol{
 
 Symbol symbol_table[TABLE_SIZE];
 int symbolCount;
-void initSymbolTable();
-
 StackItem symbol_stack[STACK_DEPTH];
 int stackTop;
 
-/* operating symbol stack */
+void initSymbolTable();
+
 int pushSymbolStack();
+
 int popSymbolStack();
+
 void printSymbolStack();
 
-/* operating current symbol stack frame */
 Symbol* getSymbol(char* name);
+
 int insertSymbol(char* name, int type_id, int lineno, int column, int attribute_id);
+
 #define existSymbol(name) (getSymbol(name) != NULL)
+
 #define getSymbolType(name) getSymbol(name)->type_id
 
 #endif

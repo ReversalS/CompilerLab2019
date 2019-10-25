@@ -1,3 +1,6 @@
+// #define USE_LIST
+#ifdef USE_LIST
+
 #include "list.h"
 #include <string.h>
 #include <stdlib.h>
@@ -66,3 +69,5 @@ void printList(StackItem* list) {
     }
     printf("\n");
 }
+
+#endif

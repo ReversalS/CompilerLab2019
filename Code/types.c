@@ -1,4 +1,7 @@
 #include "types.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void init_type_set()
 {

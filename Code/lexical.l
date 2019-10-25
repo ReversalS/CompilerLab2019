@@ -1,8 +1,5 @@
 %option yylineno
 %{
-    #include<stdio.h>
-    #include<string.h>
-    #include<stdlib.h>
     #define YYSTYPE struct Node*
     // #define YYDEBUG 1
     #include"syntax.tab.h"

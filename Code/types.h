@@ -1,10 +1,6 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #define TYPE_SET_SIZE 1024
 
 typedef struct Type Type;

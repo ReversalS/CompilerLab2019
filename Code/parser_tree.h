@@ -1,11 +1,11 @@
 #ifndef PARSER_TREE_H
 #define PARSER_TREE_H
 
-#include "enums.h"
+// #include "enums.h"
 #include "symbol_table.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
 
 
 // a global root for parser tree
