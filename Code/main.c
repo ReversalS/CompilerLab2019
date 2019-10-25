@@ -23,8 +23,10 @@ int main(int argc, char const* argv[])
     // yydebug = 1;
     yyparse();
     if (syntax_error == 0 && lexical_error == 0){
-        print_tree(global_root, 0);
-    } else if (global_root != NULL){
+        // print_tree(global_root, 0);
+        ;
+    }
+    if (global_root != NULL){
         deconstruct(global_root);
     }
     return 0;
