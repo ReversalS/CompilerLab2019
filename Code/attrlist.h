@@ -1,14 +1,17 @@
 #ifndef ATTRLIST_H
 #define ATTRLIST_H
 
+/********** include and macro **********/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+/********** typedef **********/
 typedef struct AttrList AttrList;
 typedef enum ATTR_TYPE ATTR_TYPE;
 typedef struct Var_Dec Var_Dec;
 
+/********** structure definition **********/
 enum ATTR_TYPE {
     ARRAY_SIZE,
     VAR_DEC
@@ -29,13 +32,17 @@ struct AttrList {
     AttrList* next;
 };
 
+/********** function definition **********/
 void deconstruct_attrlist(AttrList* p);
 void copy_str(char** dest, char* src);
+
 // copy construct
 // TODO:
 void copy_attrlist(AttrList** dest, AttrList* src);
+
 void insert(AttrList** p, ATTR_TYPE type, void* val);
 void append(AttrList** p, ATTR_TYPE type, void* val);
+
 // constructor
 // TODO:
 void update(AttrList* p, ATTR_TYPE type, void* val);

@@ -52,3 +52,7 @@ void spec_type(Node* root, Node* type){
         root->attr.type_id = construct_basic(FLOAT_BASIC);
     }
 }
+
+void spec_struct(Node* root, Node* stru){
+    root->attr.type_id = stru->attr.type_id;
+}

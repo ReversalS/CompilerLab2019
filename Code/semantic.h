@@ -1,14 +1,16 @@
 #ifndef SEMANTIC_H
 #define SEMANTIC_H
 
+/********** include and macro **********/
+#include "errors.h"
+
+// enums.h, attrlist.h
 #include "parser_tree.h"
-#include "attrlist.h"
-#include "types.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
+// types.h
+#include "symbol_table.h"
 
+/********** function definition **********/
 
 /* VarDec */
 // VarDec: ID

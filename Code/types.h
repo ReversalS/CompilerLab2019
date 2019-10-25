@@ -1,14 +1,15 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+/********** include and macro **********/
 #define TYPE_SET_SIZE 1024
 
+/********** typedef **********/
 typedef struct Type Type;
 typedef struct VarList VarList;
 typedef enum BOOL BOOL;
 
-int type_num;
-
+/********** structure definition **********/
 enum BASIC_TYPE{
     INT_BASIC,
     FLOAT_BASIC,
@@ -44,8 +45,11 @@ struct VarList{
     VarList* next;
 };
 
+/********** global variable **********/
+int type_num;
 Type type_set[TYPE_SET_SIZE];
 
+/********** function definition **********/
 void init_type_set();
 void deconstruct_varlist(VarList* p);
 void deconstruct_set();

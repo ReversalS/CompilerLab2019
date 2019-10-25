@@ -1,24 +1,21 @@
 %option yylineno
 %{
+    /********** include and macro **********/
     #define YYSTYPE struct Node*
     // #define YYDEBUG 1
     #include"syntax.tab.h"
     #include"parser_tree.h"
+    #define YY_USER_ACTION first_column = yycolumn; last_column = yycolumn + yyleng - 1; yycolumn += yyleng;
 
-    extern int lexical_error;
-
-    // lexeme location
+    /********** global variable **********/
+    int lexical_error;
     int yycolumn = 1;
     int first_column = 1;
     int last_column = 1;
-
-    int nest_depth = 0;
-
-    #define YY_USER_ACTION first_column = yycolumn; last_column = yycolumn + yyleng - 1; yycolumn += yyleng;
-
     union NODE_VALUE nv;
-    void output(int lineno, char* type, char* value);
 
+    /********** function definition **********/
+    void output(int lineno, char* type, char* value);
     void unknown_char(char c, int lineno);
     void invalid_id(char* str, int lineno);
 %}
@@ -265,14 +262,12 @@ NEWLINE {newline}
 {LC} {
     nv.other = LC_E;
     yylval = create_T(OTHER_E, nv, yylineno, first_column);
-    nest_depth++;
     return LC;
 }
 
 {RC} {
     nv.other = RC_E;
     yylval = create_T(OTHER_E, nv, yylineno, first_column);
-    nest_depth--;
     return RC;
 }
 
