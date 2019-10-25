@@ -7,6 +7,29 @@
 // #include <stdlib.h>
 // #include <string.h>
 
+typedef struct Node Node;
+
+struct AttrList;
+typedef struct AttrList AttrList;
+void deconstruct_attrlist(AttrList* p);
+
+struct Node {
+    // lexical
+    enum SYMBOL_TYPE symbol_type; // 终结符/非终结符
+    union NODE_TYPE node_type; // 具体的类型
+    union NODE_VALUE node_value; // 词法单元的值
+    struct Location loc; //出现位置
+    int child_num; // 子节点数量
+    struct Node** children; // 子节点数组
+
+    // semantic attrs
+    struct {
+        char* id;
+		int type_id;
+		AttrList* opt_array;
+		AttrList* var_list;
+    } attr;
+};
 
 // a global root for parser tree
 

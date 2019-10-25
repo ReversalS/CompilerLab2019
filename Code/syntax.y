@@ -1,6 +1,7 @@
 %{
     /* ... */
     #include "lex.yy.c"
+    #include "semantic.h"
     #include "parser_tree.h"
 
     int yyerror(const char*);
@@ -52,13 +53,25 @@ ExtDef: Specifier ExtDecList SEMI   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
     | Specifier error SEMI {$$ = create_EP();}
     | Specifier error Specifier FunDec CompSt   { $$ = create_EP(); }
     ;
-ExtDecList: VarDec  { FORM_SUBTREE_1($$,EXTDECLIST,$1); }
-    | VarDec COMMA ExtDecList   { FORM_SUBTREE_3($$,EXTDECLIST,$1,$2,$3); }
-    | error COMMA ExtDecList {$$ = create_EP();}
+ExtDecList: VarDec  {
+        FORM_SUBTREE_1($$,EXTDECLIST,$1);
+        extdec_var($$, $1);
+    }
+    | VarDec COMMA ExtDecList   {
+        FORM_SUBTREE_3($$,EXTDECLIST,$1,$2,$3);
+        extdec_var_comma_extdec($$, $1, $3);
+    }
+    | error COMMA ExtDecList {
+        $$ = create_EP();
+    }
     ;
 
 /* Specifiers */
-Specifier: TYPE { FORM_SUBTREE_1($$,SPECIFIER,$1); }
+Specifier: TYPE {
+        FORM_SUBTREE_1($$,SPECIFIER,$1);
+        spec_type($$, $1);
+        print_type($$->attr.type_id, 0, 1);
+    }
     | StructSpecifier   { FORM_SUBTREE_1($$,SPECIFIER,$1); }
     ;
 StructSpecifier: STRUCT OptTag LC DefList RC    { FORM_SUBTREE_5($$,STRUCTSPECIFIER,$1,$2,$3,$4,$5) }
@@ -71,8 +84,14 @@ Tag: ID { FORM_SUBTREE_1($$,TAG,$1) }
     ;
 
 /* Declarators */
-VarDec: ID  { FORM_SUBTREE_1($$,VARDEC,$1) }
-    | VarDec LB INT RB  { FORM_SUBTREE_4($$,VARDEC,$1,$2,$3,$4) }
+VarDec: ID  {
+        FORM_SUBTREE_1($$,VARDEC,$1)
+        var_id($$, $1);
+    }
+    | VarDec LB INT RB  {
+        FORM_SUBTREE_4($$,VARDEC,$1,$2,$3,$4)
+        var_var_lb_int_rb($$, $1, $3);
+    }
     | VarDec LB error RB {$$ = create_EP();}
     ;
 FunDec: ID LP VarList RP  { FORM_SUBTREE_4($$,FUNDEC,$1,$2,$3,$4) }

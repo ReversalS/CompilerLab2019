@@ -84,6 +84,7 @@ Node* create_node(enum SYMBOL_TYPE st, union NODE_TYPE nt, union NODE_VALUE nv, 
     p->loc.column = loc.column;
     p->child_num = -1;
     p->children = NULL;
+    memset(&p->attr, 0, sizeof(p->attr));
     return p;
 }
 
@@ -176,6 +177,10 @@ void deconstruct(Node* p)
         if(p->symbol_type == T && p->node_type.t_type == ID_E){
             free(p->node_value.id);
         }
+
+        free(p->attr.id);
+        deconstruct_attrlist(p->attr.opt_array);
+        deconstruct_attrlist(p->attr.var_list);
         free(p);
         return;
     } else {
@@ -186,6 +191,11 @@ void deconstruct(Node* p)
         if(p->symbol_type == T && p->node_type.t_type == ID_E){
             free(p->node_value.id);
         }
+
+        free(p->attr.id);
+        deconstruct_attrlist(p->attr.opt_array);
+        deconstruct_attrlist(p->attr.var_list);
+
         free(p);
         return;
     }
