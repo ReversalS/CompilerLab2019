@@ -59,6 +59,13 @@ ExtDecList: VarDec  {
     | VarDec COMMA ExtDecList   {
         FORM_SUBTREE_3($$,EXTDECLIST,$1,$2,$3);
         extdec_var_comma_extdec($$, $1, $3);
+        // AttrList* p = $$->attr.var_list;
+        // while(p != NULL){
+        //     printf("id: %s\n", p->attr.var_dec.id);
+        //     printf("dim: %d\n", p->attr.var_dec.opt_array_size_num);
+        //     p = p->next;
+        // }
+        // printf("========\n");
     }
     | error COMMA ExtDecList {
         $$ = create_EP();
@@ -69,17 +76,29 @@ ExtDecList: VarDec  {
 Specifier: TYPE {
         FORM_SUBTREE_1($$,SPECIFIER,$1);
         spec_type($$, $1);
-        print_type($$->attr.type_id, 0, 1);
     }
-    | StructSpecifier   { FORM_SUBTREE_1($$,SPECIFIER,$1); }
+    | StructSpecifier {
+        FORM_SUBTREE_1($$,SPECIFIER,$1);
+        spec_struct($$, $1);
+    }
     ;
-StructSpecifier: STRUCT OptTag LC DefList RC    { FORM_SUBTREE_5($$,STRUCTSPECIFIER,$1,$2,$3,$4,$5) }
-    | STRUCT Tag    { FORM_SUBTREE_2($$,STRUCTSPECIFIER,$1,$2) }
+StructSpecifier: STRUCT OptTag LC DefList RC {
+        FORM_SUBTREE_5($$,STRUCTSPECIFIER,$1,$2,$3,$4,$5)
+    }
+    | STRUCT Tag {
+        FORM_SUBTREE_2($$,STRUCTSPECIFIER,$1,$2)
+    }
     ;
-OptTag: ID  { FORM_SUBTREE_1($$,OPTTAG,$1) }
+OptTag: ID {
+        FORM_SUBTREE_1($$,OPTTAG,$1)
+        opt_id($$, $1);
+    }
     | /* empty */ {$$ = create_EP();}
     ;
-Tag: ID { FORM_SUBTREE_1($$,TAG,$1) }
+Tag: ID {
+        FORM_SUBTREE_1($$,TAG,$1)
+        tag_id($$, $1);
+    }
     ;
 
 /* Declarators */

@@ -1,4 +1,4 @@
-#include "parser_tree.h"
+#include "semantic.h"
 // #include <stdio.h>
 
 int yyrestart(FILE* f);
@@ -11,6 +11,7 @@ extern int yylineno;
 
 int main(int argc, char const* argv[])
 {
+    init_type_set();
     if (argc <= 1) {
         return 1;
     }

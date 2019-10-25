@@ -3,6 +3,7 @@
 
 /********** include and macro **********/
 #define TYPE_SET_SIZE 1024
+#define RANDOM_NAME_NUM 64
 
 /********** typedef **********/
 typedef struct Type Type;
@@ -47,7 +48,9 @@ struct VarList{
 
 /********** global variable **********/
 int type_num;
+int random_index;
 Type type_set[TYPE_SET_SIZE];
+char* random_names[RANDOM_NAME_NUM];
 
 /********** function definition **********/
 void init_type_set();
@@ -72,5 +75,7 @@ int add_member(int base, char* name, int type);
 void print_type(int type, int level, int newline);
 void print_array(int type, int level);
 void print_var(VarList* p, int level);
+
+const char* get_random_name();
 
 #endif

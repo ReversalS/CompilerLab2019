@@ -6,6 +6,7 @@
 void init_type_set()
 {
     type_num = 0;
+    random_index = 0;
     memset(type_set, 0, sizeof(Type) * TYPE_SET_SIZE);
 }
 
@@ -331,5 +332,81 @@ void print_var(VarList* p, int level)
         }
         print_type(p->type, level, 1);
         print_var(p->next, level);
+    }
+}
+
+char* random_names[RANDOM_NAME_NUM] = {
+    "Qq5CsLwBcW",
+    "IXDvkP13TY",
+    "bujjAPSc6X",
+    "rup6THRDyQ",
+    "HVIf9LkAQS",
+    "XXv8vaAQds",
+    "4D3JVNJ9KT",
+    "JciK1GG8Iz",
+    "byvjaGc6LX",
+    "prMZ0tsBVj",
+    "4CAj5g68JU",
+    "ncLoGCkr7e",
+    "6EP2NxWETQ",
+    "FMrGgYAbZV",
+    "dMS3uU0PXs",
+    "nOSa7LD5W7",
+    "2F7S4Ok2at",
+    "AAmeUJbznR",
+    "A9LZ08QIRq",
+    "MNaAS5ZnGb",
+    "jknRkm9r2O",
+    "qj67JsMrE3",
+    "2b6lrXLryU",
+    "XGMxYev8Qm",
+    "51YnZIJv7I",
+    "qJIWtNMJFT",
+    "VgcoSQIbzF",
+    "vwfmQOmmJV",
+    "yLRzxtd71E",
+    "YMhe4t3odH",
+    "PyVXHeeJZP",
+    "GvGGfK7IPJ",
+    "kKv33pnF7W",
+    "8mjvY5COLa",
+    "phJJfLDgvG",
+    "x0hb3t3i9H",
+    "EjnmpwA8OB",
+    "i7MNjDbi2X",
+    "rSyTONazh4",
+    "8q9tbQiJCI",
+    "xK9sN3Z6jD",
+    "44AnOBQ87e",
+    "pmk51OVy8I",
+    "AcpdDo9jVM",
+    "kTpUIqg1CR",
+    "iTBXGKZbj6",
+    "uzgFKXrXWv",
+    "3oNStbin4I",
+    "daGjmdoxhb",
+    "2Z8v5yTEFI",
+    "puH1ZjrEok",
+    "64XObRu7WQ",
+    "h4trgoNjA1",
+    "ggG0m4UIUl",
+    "GyTBMTb2NS",
+    "siz3xkPSEU",
+    "JlFiHSgX9m",
+    "BCGaDMEtY3",
+    "thVcgMqAVV",
+    "YMBUzfODLE",
+    "KQhiic7NDW",
+    "ga1sF9TH6h",
+    "Xj3Espiv30",
+    "jYd7xPnucg",
+};
+
+const char* get_random_name(){
+    if(random_index < RANDOM_NAME_NUM){
+        random_index++;
+        return random_names[random_index-1];
+    } else {
+        return NULL;
     }
 }

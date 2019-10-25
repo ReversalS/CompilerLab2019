@@ -85,6 +85,7 @@ Node* create_node(enum SYMBOL_TYPE st, union NODE_TYPE nt, union NODE_VALUE nv, 
     p->child_num = -1;
     p->children = NULL;
     memset(&p->attr, 0, sizeof(p->attr));
+    p->attr.type_id = -1;
     return p;
 }
 
