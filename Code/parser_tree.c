@@ -183,6 +183,7 @@ void deconstruct(Node* p)
         deconstruct_attrlist(p->attr.opt_array);
         deconstruct_attrlist(p->attr.var_list);
         deconstruct_attrlist(p->attr.vardef_list);
+        deconstruct_attrlist(p->attr.para_list);
         free(p);
         return;
     } else {

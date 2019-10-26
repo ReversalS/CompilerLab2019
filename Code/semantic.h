@@ -18,6 +18,7 @@ unsigned hash_pjw(char* str);
 int dup_field(AttrList* vardef_list);
 Var_Dec* format_vardec(Node* var);
 Var_Def* format_vardef(Node* var, int type_id);
+Para* format_para(Node* var, int type_id);
 
 /* VarDec */
 // VarDec: ID
@@ -38,7 +39,7 @@ void spec_type(Node* root, Node* type);
 void spec_struct(Node* root, Node* stru);
 
 /* StructSpecifier */
-// TODO:StructSpecifier: STRUCT OptTag LC DefList RC
+// StructSpecifier: STRUCT OptTag LC DefList RC
 void struct_opt_lc_def_rc(Node* root, Node* opt, Node* def);
 // StructSpecifier: STRUCT Tag
 void struct_struct_tag(Node* root, Node* tag);
@@ -76,4 +77,8 @@ void def_def_def(Node* root, Node* def, Node* deflist);
 void exp_int(Node* root);
 // Exp: FLOAT
 void exp_float(Node* root);
+
+/* ParamDec */
+// ParamDec: Specifier VarDec
+void param_spec_var(Node* root, Node* spec, Node* var);
 #endif

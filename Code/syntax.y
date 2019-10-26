@@ -134,7 +134,10 @@ VarList: ParamDec COMMA VarList  { FORM_SUBTREE_3($$,VARLIST,$1,$2,$3) }
     | ParamDec  { FORM_SUBTREE_1($$,VARLIST,$1) }
     | error COMMA VarList {$$ = create_EP();}
     ;
-ParamDec: Specifier VarDec  { FORM_SUBTREE_2($$,PARAMDEC,$1,$2) }
+ParamDec: Specifier VarDec {
+        FORM_SUBTREE_2($$,PARAMDEC,$1,$2)
+        param_spec_var($$, $1, $2);
+    }
     ;
 
 /* Statements */

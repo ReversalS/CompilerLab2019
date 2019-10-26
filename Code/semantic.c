@@ -126,6 +126,25 @@ Var_Def* format_vardef(Node* var, int type_id)
     return temp;
 }
 
+Para* format_para(Node* var, int type_id){
+    Para* temp = (Para*)malloc(sizeof(Para));
+    AttrList* p = NULL;
+    int temp_type = type_id;
+    memset(temp, 0, sizeof(Para));
+    copy_str(&temp->id, var->attr.id);
+    if(var->attr.opt_array != NULL){
+        p = var->attr.opt_array;
+        while(p != NULL){
+            temp_type = construct_array(temp_type, p->attr.array_size);
+            p = p->next;
+        }
+        temp->type = temp_type;
+    } else {
+        temp->type = type_id;
+    }
+    return temp;
+}
+
 void var_id(Node* root, Node* id)
 {
     copy_str(&root->attr.id, id->node_value.id);
@@ -296,4 +315,11 @@ void exp_int(Node* root)
 void exp_float(Node* root)
 {
     root->attr.type_id = construct_basic(FLOAT_BASIC);
+}
+
+void param_spec_var(Node* root, Node* spec, Node* var){
+    Para* temp = format_para(var, spec->attr.type_id);
+    insert(&root->attr.para_list, PARA, temp);
+    free(temp->id);
+    free(temp);
 }

@@ -11,12 +11,14 @@ typedef struct AttrList AttrList;
 typedef enum ATTR_TYPE ATTR_TYPE;
 typedef struct Var_Dec Var_Dec;
 typedef struct Var_Def Var_Def;
+typedef struct Para Para;
 
 /********** structure definition **********/
 enum ATTR_TYPE {
     ARRAY_SIZE,
     VAR_DEC,
-    VAR_DEF
+    VAR_DEF,
+    PARA
 };
 
 struct Var_Dec {
@@ -34,12 +36,18 @@ struct Var_Def{
     int line;
 };
 
+struct Para{
+    char* id;
+    int type;
+};
+
 struct AttrList {
     ATTR_TYPE kind;
     union {
         int array_size;
         Var_Dec var_dec;
         Var_Def var_def;
+        Para para;
     } attr;
     AttrList* next;
 };

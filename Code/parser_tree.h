@@ -29,6 +29,7 @@ struct Node {
         AttrList* opt_array;
         AttrList* var_list;
         AttrList* vardef_list;
+        AttrList* para_list;
     } attr;
 };
 
