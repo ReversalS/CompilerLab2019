@@ -1,3 +1,10 @@
-int inc(){
-    int a, b, a;
-}
+struct A{
+    int a, b;
+    float x, y;
+};
+
+struct {
+    int c, d, c;
+};
+
+struct B b;

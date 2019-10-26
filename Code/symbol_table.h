@@ -127,7 +127,7 @@ struct Symbol{
     dest.type_id = type_id;\
     dest.location.line = lineno;\
     dest.location.column = column;\
-    dest.attribute_id = attribute_id;    
+    dest.attribute_id = attribute_id;
 
 #define COPY_SYMBOL(dest, src) memcpy(dest, src, sizeof(Symbol))
 
@@ -149,6 +149,6 @@ Symbol* getSymbol(char* name, int is_prior);
 
 int insertSymbol(char* name, int is_prior, int type_id, int lineno, int column, int attribute_id);
 
-#define updateSymbolType(id) symbol_table[id].type_id = id
+#define updateSymbolType(id, type) symbol_table[id].type_id = type
 
 #endif

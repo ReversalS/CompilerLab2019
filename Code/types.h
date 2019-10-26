@@ -76,6 +76,6 @@ void print_type(int type, int level, int newline);
 void print_array(int type, int level);
 void print_var(VarList* p, int level);
 
-const char* get_random_name();
+char* get_random_name();
 
 #endif

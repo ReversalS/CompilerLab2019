@@ -94,16 +94,20 @@ Specifier: TYPE {
     ;
 StructSpecifier: STRUCT OptTag LC DefList RC {
         FORM_SUBTREE_5($$,STRUCTSPECIFIER,$1,$2,$3,$4,$5)
+        struct_opt_lc_def_rc($$, $2, $4);
     }
     | STRUCT Tag {
         FORM_SUBTREE_2($$,STRUCTSPECIFIER,$1,$2)
+        struct_struct_tag($$, $2);
     }
     ;
 OptTag: ID {
         FORM_SUBTREE_1($$,OPTTAG,$1)
         opt_id($$, $1);
     }
-    | /* empty */ {$$ = create_EP();}
+    | /* empty */ {
+        $$ = create_EP();
+    }
     ;
 Tag: ID {
         FORM_SUBTREE_1($$,TAG,$1)

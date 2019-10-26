@@ -41,7 +41,7 @@ void spec_struct(Node* root, Node* stru);
 // TODO:StructSpecifier: STRUCT OptTag LC DefList RC
 void struct_opt_lc_def_rc(Node* root, Node* opt, Node* def);
 // StructSpecifier: STRUCT Tag
-void struct_sturct_tag(Node* root, Node* tag);
+void struct_struct_tag(Node* root, Node* tag);
 
 /* Tag */
 // Tag: ID

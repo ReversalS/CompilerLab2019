@@ -274,6 +274,9 @@ int add_member(int base, char* name, int type)
 
 void print_type(int type, int level, int newline)
 {
+    if(type >= type_num || type < 0){
+        return ;
+    }
     switch (type_set[type].kind) {
     case BASIC:
         if (type_set[type].u.basic == INT_BASIC) {
@@ -402,7 +405,7 @@ char* random_names[RANDOM_NAME_NUM] = {
     "jYd7xPnucg",
 };
 
-const char* get_random_name(){
+char* get_random_name(){
     if(random_index < RANDOM_NAME_NUM){
         random_index++;
         return random_names[random_index-1];
