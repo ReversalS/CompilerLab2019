@@ -123,25 +123,40 @@ void printSymbolStack() {
     printf("---------------------------------\n");
 }
 
-Symbol* getSymbol(char* name) {
-    //search data structure and get id
-    int stackPointer = stackTop - 1;
-    int id = -1;
-    while (id == -1 && stackPointer >= 0) {
-        int id = searchNode(&symbol_stack[stackPointer].root, name)->index;
-        stackPointer--;
+Symbol* getSymbol(char* name, int is_prior) {   //TO BE TESTED
+    erb_node* ptr = NULL;
+
+    if (is_prior) {
+        ptr = searchNode(&prior_symbols.root, name);
     }
-    return &symbol_table[id];
+    else {
+        //search data structure and get id
+        int stackPointer = stackTop - 1;
+        
+        while (ptr==NULL && stackPointer >= 0) {
+            ptr = searchNode(&symbol_stack[stackPointer].root, name)->index;
+            stackPointer--;
+        }
+    }
+
+    if (ptr)
+            return &symbol_table[ptr->index];
+    else
+        return NULL;
 }
 
-int insertSymbol(char* name, int type_id, int lineno, int column, int attribute_id) {
+int insertSymbol(char* name, int is_def, int type_id, int lineno, int column, int attribute_id) {
     FILL_SYMBOL(symbol_table[symbolCount], name, type_id, lineno, column, attribute_id) 
-    int ret = insertNode(&(symbol_stack[stackTop-1].root), name, symbolCount);
+    int ret = -1;
+    if (is_def)
+        ret = insertNode(&(prior_symbols.root), name, symbolCount);
+    else if (searchNode(&prior_symbols.root, name) == NULL)
+        ret = insertNode(&(symbol_stack[stackTop-1].root), name, symbolCount);
     if (ret == -1)
         return -1;
     else
         symbolCount++;
-    return 0;
+    return symbolCount-1;
 }
 
 #else
