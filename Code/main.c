@@ -12,6 +12,7 @@ extern int yylineno;
 int main(int argc, char const* argv[])
 {
     init_type_set();
+    initSymbolTable();
     if (argc <= 1) {
         return 1;
     }
