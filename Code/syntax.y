@@ -41,16 +41,36 @@ Program: ExtDefList {
         // FORM_SUBTREE(1, PROGRAM);
         FORM_SUBTREE_1($$,PROGRAM,$1);
         global_root = $$;
+        program_extdef($$, $1);
     };
-ExtDefList: ExtDef ExtDefList   { FORM_SUBTREE_2($$,EXTDEFLIST,$1,$2) }
-    | /* empty */               {$$ = create_EP();}
+ExtDefList: ExtDef ExtDefList {
+        FORM_SUBTREE_2($$,EXTDEFLIST,$1,$2)
+        extdef_extdef_extdef($$, $1, $2);
+    }
+    | /* empty */ {
+        $$ = create_EP();
+    }
     ;
-ExtDef: Specifier ExtDecList SEMI   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
-    | Specifier SEMI    { FORM_SUBTREE_2($$,EXTDEF,$1,$2); }
-    | Specifier FunDec CompSt   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
-    | error SEMI    {$$ = create_EP();}
-    | Specifier error SEMI {$$ = create_EP();}
-    | Specifier error Specifier FunDec CompSt   { $$ = create_EP(); }
+ExtDef: Specifier ExtDecList SEMI {
+        FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3);
+        extdef_spec_extdec_semi($$, $1, $2);
+    }
+    | Specifier SEMI {
+        FORM_SUBTREE_2($$,EXTDEF,$1,$2);
+        extdef_spec_semi($$, $1);
+    }
+    | Specifier FunDec CompSt {
+        FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3);
+    }
+    | error SEMI {
+        $$ = create_EP();
+    }
+    | Specifier error SEMI {
+        $$ = create_EP();
+    }
+    | Specifier error Specifier FunDec CompSt {
+        $$ = create_EP();
+    }
     ;
 ExtDecList: VarDec  {
         FORM_SUBTREE_1($$,EXTDECLIST,$1);
@@ -126,12 +146,42 @@ VarDec: ID  {
     }
     | VarDec LB error RB {$$ = create_EP();}
     ;
-FunDec: ID LP VarList RP  { FORM_SUBTREE_4($$,FUNDEC,$1,$2,$3,$4) }
-    | ID LP RP  { FORM_SUBTREE_3($$,FUNDEC,$1,$2,$3) }
-    | ID LP error RP {$$ = create_EP();}
+FunDec: ID LP VarList RP  {
+        FORM_SUBTREE_4($$,FUNDEC,$1,$2,$3,$4)
+        fun_id_lp_var_rp($$, $1, $3);
+        // printf("%s (", $$->attr.id);
+        // AttrList* p = $$->attr.para_list;
+        // while(p != NULL){
+        //     printf(" %s ", p->attr.para.id);
+        //     print_type(p->attr.para.type, 0, 0);
+        //     p = p->next;
+        // }
+        // printf(")\n");
+    }
+    | ID LP RP  {
+        FORM_SUBTREE_3($$,FUNDEC,$1,$2,$3)
+        fun_id_lp_rp($$, $1);
+        // printf("%s (", $$->attr.id);
+        // AttrList* p = $$->attr.para_list;
+        // while(p != NULL){
+        //     printf(" %s ", p->attr.para.id);
+        //     print_type(p->attr.para.type, 0, 0);
+        //     p = p->next;
+        // }
+        // printf(")\n");
+    }
+    | ID LP error RP {
+        $$ = create_EP();
+    }
     ;
-VarList: ParamDec COMMA VarList  { FORM_SUBTREE_3($$,VARLIST,$1,$2,$3) }
-    | ParamDec  { FORM_SUBTREE_1($$,VARLIST,$1) }
+VarList: ParamDec COMMA VarList {
+        FORM_SUBTREE_3($$,VARLIST,$1,$2,$3)
+        var_para_comma_var($$, $1, $3);
+    }
+    | ParamDec {
+        FORM_SUBTREE_1($$,VARLIST,$1)
+        var_para($$, $1);
+    }
     | error COMMA VarList {$$ = create_EP();}
     ;
 ParamDec: Specifier VarDec {
@@ -229,8 +279,12 @@ Exp: Exp ASSIGNOP Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | Exp LB Exp RB { FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4) }
     | Exp LB error RB {$$ = create_EP();}
     | Exp DOT ID    { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | ID    { FORM_SUBTREE_1($$,EXP,$1) }
-    | INT   {
+    | ID {
+        FORM_SUBTREE_1($$,EXP,$1)
+        exp_id($$, $1);
+        print_type($$->attr.type_id, 0, 1);
+    }
+    | INT {
         FORM_SUBTREE_1($$,EXP,$1)
         exp_int($$);
     }

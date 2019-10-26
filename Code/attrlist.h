@@ -44,9 +44,13 @@ struct Para{
 struct AttrList {
     ATTR_TYPE kind;
     union {
+        // vardec
         int array_size;
+        // format vardec
         Var_Dec var_dec;
+        // vardec with type
         Var_Def var_def;
+        // func para
         Para para;
     } attr;
     AttrList* next;

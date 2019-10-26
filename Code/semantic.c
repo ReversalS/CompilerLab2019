@@ -7,7 +7,7 @@ int legal_struct_def(char* name)
         return -1;
     } else {
         type = getSymbol(name, 1)->type_id;
-        if(type < 0 || type >= type_num){
+        if (type < 0 || type >= type_num) {
             return -1;
         }
         if (type_set[type].kind == STRUCTURE && strcmp(type_set[type].u.structure.name, name) == 0) {
@@ -126,15 +126,16 @@ Var_Def* format_vardef(Node* var, int type_id)
     return temp;
 }
 
-Para* format_para(Node* var, int type_id){
+Para* format_para(Node* var, int type_id)
+{
     Para* temp = (Para*)malloc(sizeof(Para));
     AttrList* p = NULL;
     int temp_type = type_id;
     memset(temp, 0, sizeof(Para));
     copy_str(&temp->id, var->attr.id);
-    if(var->attr.opt_array != NULL){
+    if (var->attr.opt_array != NULL) {
         p = var->attr.opt_array;
-        while(p != NULL){
+        while (p != NULL) {
             temp_type = construct_array(temp_type, p->attr.array_size);
             p = p->next;
         }
@@ -184,7 +185,6 @@ void spec_type(Node* root, Node* type)
 void spec_struct(Node* root, Node* stru)
 {
     root->attr.type_id = stru->attr.type_id;
-
 }
 
 void struct_opt_lc_def_rc(Node* root, Node* opt, Node* def)
@@ -239,7 +239,7 @@ void struct_opt_lc_def_rc(Node* root, Node* opt, Node* def)
 void struct_struct_tag(Node* root, Node* tag)
 {
     root->attr.type_id = legal_struct_def(tag->attr.id);
-    if(root->attr.type_id == -1){
+    if (root->attr.type_id == -1) {
         print_error(17, root->loc.line, tag->attr.id, NULL);
     }
 }
@@ -317,9 +317,83 @@ void exp_float(Node* root)
     root->attr.type_id = construct_basic(FLOAT_BASIC);
 }
 
-void param_spec_var(Node* root, Node* spec, Node* var){
+void exp_id(Node* root, Node* id){
+    if(getSymbol(id->node_value.id, 0) == NULL){
+        // not found
+        print_error(1, root->loc.line, id->node_value.id, NULL);
+    } else{
+        copy_str(&root->attr.id, id->node_value.id);
+        root->attr.type_id = getSymbol(id->node_value.id, 0)->type_id;
+    }
+}
+
+void param_spec_var(Node* root, Node* spec, Node* var)
+{
     Para* temp = format_para(var, spec->attr.type_id);
     insert(&root->attr.para_list, PARA, temp);
     free(temp->id);
     free(temp);
+}
+
+void var_para_comma_var(Node* root, Node* para, Node* var)
+{
+    copy_attrlist(&root->attr.para_list, var->attr.para_list);
+    var_para(root, para);
+    AttrList* p = root->attr.para_list;
+}
+
+void var_para(Node* root, Node* para)
+{
+    insert(&root->attr.para_list, PARA, (void*)&para->attr.para_list->attr.para);
+}
+
+void fun_id_lp_var_rp(Node* root, Node* id, Node* var)
+{
+    copy_str(&root->attr.id, id->node_value.id);
+    copy_attrlist(&root->attr.para_list, var->attr.para_list);
+}
+
+void fun_id_lp_rp(Node* root, Node* id)
+{
+    copy_str(&root->attr.id, id->node_value.id);
+}
+
+void extdef_spec_extdec_semi(Node* root, Node* spec, Node* extdec){
+    if(spec->attr.type_id < 0 || spec->attr.type_id >= type_num){
+        return ;
+    }
+    int base_type = spec->attr.type_id;
+    int temp_type = base_type;
+    int index = -1;
+    AttrList* p = extdec->attr.var_list;
+    while(p != NULL){
+        if(p->attr.var_dec.opt_array_size_num > 0){
+            for(int i = 0; i < p->attr.var_dec.opt_array_size_num; i++){
+                temp_type = construct_array(temp_type, p->attr.var_dec.opt_array_size[i]);
+            }
+        } else {
+            temp_type = base_type;
+        }
+        index = insertSymbol(p->attr.var_dec.id, 0, temp_type, root->loc.line, root->loc.column, 0);
+        if(index == -1){
+            // redefine
+            print_error(3, root->loc.line, p->attr.var_dec.id, NULL);
+        } else {
+            printf("Insert Symbol\n");
+        }
+        temp_type = base_type;
+        p = p->next;
+    }
+}
+
+void extdef_spec_semi(Node*root, Node* spec){
+    // do nothing
+}
+
+void extdef_extdef_extdef(Node* root, Node* extdef, Node* extdeflist){
+    // do nothing
+}
+
+void program_extdef(Node* root, Node* extdef){
+    // do nothing
 }

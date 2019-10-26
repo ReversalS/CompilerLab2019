@@ -77,8 +77,38 @@ void def_def_def(Node* root, Node* def, Node* deflist);
 void exp_int(Node* root);
 // Exp: FLOAT
 void exp_float(Node* root);
+// Exp: ID
+void exp_id(Node* root, Node* id);
 
 /* ParamDec */
 // ParamDec: Specifier VarDec
 void param_spec_var(Node* root, Node* spec, Node* var);
+
+/* VarList */
+// VarList: ParamDec COMMA VarList
+void var_para_comma_var(Node* root, Node* para, Node* var);
+// VarList: ParamDec
+void var_para(Node* root, Node* para);
+
+/* FunDec */
+// FunDec: ID LP VarList RP
+void fun_id_lp_var_rp(Node* root, Node* id, Node* var);
+// FunDec: ID LP RP
+void fun_id_lp_rp(Node* root, Node* id);
+
+/* ExtDef */
+// ExtDef: Specifier ExtDecList SEMI
+void extdef_spec_extdec_semi(Node* root, Node* spec, Node* extdec);
+// Specifier SEMI
+void extdef_spec_semi(Node*root, Node* spec);
+// TODO: Specifier FunDec CompSt
+void extdef_spec_fun_comp(Node* root, Node* spec, Node* fun, Node* comp);
+
+/* ExtdefList */
+// ExtDefList: ExtDef ExtDefList
+void extdef_extdef_extdef(Node* root, Node* extdef, Node* extdeflist);
+
+/* Program */
+// Program: ExtDefList
+void program_extdef(Node* root, Node* extdef);
 #endif

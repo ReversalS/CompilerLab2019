@@ -140,6 +140,7 @@ void update(AttrList* p, ATTR_TYPE type, void* val)
         p->attr.var_def.line = r->line;
         break;
     case PARA:
+        p->kind = PARA;
         s = (Para*)val;
         p->attr.para.type = s->type;
         copy_str(&p->attr.para.id, s->id);

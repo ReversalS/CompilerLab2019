@@ -1,8 +1,4 @@
-struct A{
-    int a;
-    float b;
-};
-
-int inc(int a, int b[5], struct A c){
-    return a + b[1];
+int a, b, c;
+int main(){
+    a = b + c;
 }
