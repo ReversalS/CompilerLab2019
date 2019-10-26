@@ -14,6 +14,7 @@ void deconstruct_attrlist(AttrList* p)
             break;
         case VAR_DEF:
             free(p->attr.var_def.type_id);
+            free(p->attr.var_def.init);
             for (int i = 0; i < p->attr.var_def.var_num; i++) {
                 free(p->attr.var_def.id[i]);
             }
@@ -123,10 +124,13 @@ void update(AttrList* p, ATTR_TYPE type, void* val)
         p->attr.var_def.var_num = r->var_num;
         p->attr.var_def.id = (char**)malloc(sizeof(char*) * r->var_num);
         p->attr.var_def.type_id = (int*)malloc(sizeof(int) * r->var_num);
+        p->attr.var_def.init = (int*)malloc(sizeof(int) * r->var_num);
         for (int i = 0; i < r->var_num; i++) {
             copy_str(&p->attr.var_def.id[i], r->id[i]);
             p->attr.var_def.type_id[i] = r->type_id[i];
+            p->attr.var_def.init[i] = r->init[i];
         }
+        p->attr.var_def.line = r->line;
         break;
     }
 }

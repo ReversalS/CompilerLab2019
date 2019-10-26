@@ -30,6 +30,8 @@ struct Var_Def{
     int var_num;
     char** id;
     int *type_id;
+    int *init;
+    int line;
 };
 
 struct AttrList {

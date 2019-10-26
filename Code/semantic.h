@@ -13,6 +13,9 @@
 /********** function definition **********/
 
 int legal_struct_def(char* name);
+int init_field(AttrList* vardef_list);
+unsigned hash_pjw(char* str);
+int dup_field(AttrList* vardef_list);
 Var_Dec* format_vardec(Node* var);
 Var_Def* format_vardef(Node* var, int type_id);
 
@@ -36,6 +39,7 @@ void spec_struct(Node* root, Node* stru);
 
 /* StructSpecifier */
 // TODO:StructSpecifier: STRUCT OptTag LC DefList RC
+void struct_opt_lc_def_rc(Node* root, Node* opt, Node* def);
 // StructSpecifier: STRUCT Tag
 void struct_sturct_tag(Node* root, Node* tag);
 
@@ -66,4 +70,10 @@ void def_spec_dec_semi(Node* root, Node* spec, Node* dec);
 /* DefList */
 // DefList: Def DefList
 void def_def_def(Node* root, Node* def, Node* deflist);
+
+/* Exp */
+// Exp: INT
+void exp_int(Node* root);
+// Exp: FLOAT
+void exp_float(Node* root);
 #endif

@@ -15,6 +15,46 @@ int legal_struct_def(char* name)
     }
 }
 
+int init_field(AttrList* vardef_list){
+    AttrList* p = vardef_list;
+    while(p != NULL){
+        for(int i = 0; i < p->attr.var_def.var_num; i++){
+            if(p->attr.var_def.init[i] == 1){
+                print_error(15, p->attr.var_def.line, p->attr.var_def.id[i], NULL);
+            }
+        }
+        p = p->next;
+    }
+}
+
+int dup_field(AttrList* vardef_list){
+    AttrList* p = vardef_list;
+    unsigned char* temp_hash = (unsigned char*)malloc(sizeof(unsigned char) * 997);
+    unsigned hash = 0;
+    memset(temp_hash, 0, sizeof(unsigned char) * 997);
+    while(p != NULL){
+        for(int i = 0; i < p->attr.var_def.var_num; i++){
+            hash = hash_pjw(p->attr.var_def.id[i]) % 997;
+            temp_hash[hash]++;
+            if(temp_hash[hash] > 1){
+                // duplicate
+                print_error(15, p->attr.var_def.line, p->attr.var_def.id[i], NULL);
+            }
+        }
+        p = p->next;
+    }
+    free(temp_hash);
+}
+
+unsigned hash_pjw(char* str){
+    unsigned seed = 131;
+    unsigned hash = 0;
+    while(*str){
+        hash = hash * seed + (*str++);
+    }
+    return (hash & 0x7fffffff);
+}
+
 Var_Dec* format_vardec(Node* var)
 {
     Var_Dec* temp = (Var_Dec*)malloc(sizeof(Var_Dec));
@@ -55,6 +95,8 @@ Var_Def* format_vardef(Node* var, int type_id)
     temp->var_num = i;
     temp->id = (char**)malloc(sizeof(char*) * temp->var_num);
     temp->type_id = (int*)malloc(sizeof(int) * temp->var_num);
+    temp->init = (int*)malloc(sizeof(int) * temp->var_num);
+    temp->line = var->loc.line;
     p = var->attr.var_list;
     for (int j = 0; j < temp->var_num; j++) {
         copy_str(&temp->id[j], p->attr.var_dec.id);
@@ -66,6 +108,9 @@ Var_Def* format_vardef(Node* var, int type_id)
             type1 = type_id;
         } else {
             temp->type_id[j] = type_id;
+        }
+        if(p->attr.var_dec.opt_init_type_id != -1){
+            temp->init[j] = 1;
         }
         if (p->attr.var_dec.opt_init_type_id != -1 && temp->type_id[j] != p->attr.var_dec.opt_init_type_id) {
             print_error(5, var->loc.line, NULL, NULL);
@@ -114,6 +159,30 @@ void spec_type(Node* root, Node* type)
 void spec_struct(Node* root, Node* stru)
 {
     root->attr.type_id = stru->attr.type_id;
+}
+
+void struct_opt_lc_def_rc(Node* root, Node* opt, Node* def)
+{
+    // int ret = -1;
+    // int index = -1;
+    // if(opt->attr.id != NULL){
+    //     // TODO:
+    //     // if(exists(opt->attr.id)){
+    //     //     // redefine
+
+    //     // }
+
+    //     ret = construct_struct(opt->attr.id);
+    //     if(ret == -1){
+    //         // redefine
+    //         print_error(16, opt->loc.line, opt->attr.id, NULL);
+    //     } else {
+    //         // update typeid
+
+    //     }
+    // } else {
+
+    // }
 }
 
 void struct_sturct_tag(Node* root, Node* tag)
@@ -182,4 +251,12 @@ void def_def_def(Node* root, Node* def, Node* deflist)
         copy_attrlist(&root->attr.vardef_list, deflist->attr.vardef_list);
     }
     insert(&root->attr.vardef_list, VAR_DEF, &def->attr.vardef_list->attr.var_def);
+}
+
+void exp_int(Node* root){
+    root->attr.type_id = construct_basic(INT_BASIC);
+}
+
+void exp_float(Node* root){
+    root->attr.type_id = construct_basic(FLOAT_BASIC);
 }

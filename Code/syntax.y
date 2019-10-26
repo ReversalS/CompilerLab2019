@@ -223,8 +223,14 @@ Exp: Exp ASSIGNOP Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | Exp LB error RB {$$ = create_EP();}
     | Exp DOT ID    { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | ID    { FORM_SUBTREE_1($$,EXP,$1) }
-    | INT   { FORM_SUBTREE_1($$,EXP,$1) }
-    | FLOAT { FORM_SUBTREE_1($$,EXP,$1) }
+    | INT   {
+        FORM_SUBTREE_1($$,EXP,$1)
+        exp_int($$);
+    }
+    | FLOAT {
+        FORM_SUBTREE_1($$,EXP,$1)
+        exp_float($$);
+    }
     ;
 Args: Exp COMMA Args    { FORM_SUBTREE_3($$,ARGS,$1,$2,$3) }
     | Exp   { FORM_SUBTREE_1($$,ARGS,$1) }
