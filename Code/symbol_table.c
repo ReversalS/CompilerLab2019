@@ -5,7 +5,6 @@ void initSymbolTable() {
     stackTop = 0;
     memset((void*)symbol_table, 0, sizeof(symbol_table));
     memset((void*)symbol_stack, 0, sizeof(symbol_stack));
-    memset((void*)&prior_symbols, 0, sizeof(symbol_stack));
     pushSymbolStack();    //add it here or do it manually outside.
 }
 
@@ -128,7 +127,7 @@ Symbol* getSymbol(char* name, int is_prior) {   //TO BE TESTED
     erb_node* ptr = NULL;
 
     if (is_prior) {
-        ptr = searchNode(&prior_symbols.root, name);
+        ptr = searchNode(&symbol_stack[0].root, name);
     }
     else {
         //search data structure and get id
@@ -147,12 +146,15 @@ Symbol* getSymbol(char* name, int is_prior) {   //TO BE TESTED
 }
 
 int insertSymbol(char* name, int is_def, int type_id, int lineno, int column, int attribute_id) {
-    FILL_SYMBOL(symbol_table[symbolCount], name, type_id, lineno, column, attribute_id) 
+    FILL_SYMBOL(symbol_table[symbolCount], is_def, type_id, lineno, column, attribute_id) 
     int ret = -1;
-    if (is_def)
-        ret = insertNode(&(prior_symbols.root), name, symbolCount);
-    else if (searchNode(&prior_symbols.root, name) == NULL)
-        ret = insertNode(&(symbol_stack[stackTop-1].root), name, symbolCount);
+    if (is_def || stackTop == 1)
+        ret = insertNode(&(symbol_stack[0].root), name, symbolCount);
+    else {
+        erb_node* ptr = searchNode(&symbol_stack[0].root, name);
+        if (ptr == NULL || symbol_table[ptr->index].is_prior == 0)  //undefined or defined but not prior
+            ret = insertNode(&(symbol_stack[stackTop-1].root), name, symbolCount);
+    }
     if (ret == -1)
         return -1;
     else

@@ -77,6 +77,8 @@
 * 建议的模块设计
 * Functional Style
 * define USE_RBTREE to switch from list to red-black tree
+* 全局变量和各种定义在底层，互相不能重名
+× 局部变量可以和全局变量重名不可以和定义重名
 -------------------------------------------------*/
 
 typedef struct Symbol Symbol;
@@ -117,13 +119,15 @@ typedef struct Symbol Symbol;
 
 struct Symbol{
     int id;
+    int is_prior;
     int type_id;
     Location location;
     int attribute_id;
 };
 
-#define FILL_SYMBOL(dest, name, tid, row, col, attr)\
+#define FILL_SYMBOL(dest, prior, tid, row, col, attr)\
     dest.id = symbolCount;/* name id or not */\
+    dest.is_prior = prior;\
     dest.type_id = type_id;\
     dest.location.line = lineno;\
     dest.location.column = column;\
@@ -135,7 +139,6 @@ Symbol symbol_table[TABLE_SIZE];
 int symbolCount;
 StackItem symbol_stack[STACK_DEPTH];
 int stackTop;
-StackItem prior_symbols; //for structure definitions and functions
 
 void initSymbolTable();
 
