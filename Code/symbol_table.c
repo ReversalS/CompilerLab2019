@@ -5,6 +5,7 @@ void initSymbolTable() {
     stackTop = 0;
     memset((void*)symbol_table, 0, sizeof(symbol_table));
     memset((void*)symbol_stack, 0, sizeof(symbol_stack));
+    memset((void*)&prior_symbols, 0, sizeof(symbol_stack));
     pushSymbolStack();    //add it here or do it manually outside.
 }
 
@@ -134,7 +135,7 @@ Symbol* getSymbol(char* name, int is_prior) {   //TO BE TESTED
         int stackPointer = stackTop - 1;
         
         while (ptr==NULL && stackPointer >= 0) {
-            ptr = searchNode(&symbol_stack[stackPointer].root, name)->index;
+            ptr = searchNode(&symbol_stack[stackPointer].root, name);
             stackPointer--;
         }
     }
