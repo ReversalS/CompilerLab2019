@@ -135,6 +135,7 @@ Symbol symbol_table[TABLE_SIZE];
 int symbolCount;
 StackItem symbol_stack[STACK_DEPTH];
 int stackTop;
+StackItem prior_symbols; //for structure definitions and functions
 
 void initSymbolTable();
 
@@ -144,12 +145,10 @@ int popSymbolStack();
 
 void printSymbolStack();
 
-Symbol* getSymbol(char* name);
+Symbol* getSymbol(char* name, int is_prior);
 
-int insertSymbol(char* name, int type_id, int lineno, int column, int attribute_id);
+int insertSymbol(char* name, int is_prior, int type_id, int lineno, int column, int attribute_id);
 
-#define existSymbol(name) (getSymbol(name) != NULL)
-
-#define getSymbolType(name) getSymbol(name)->type_id
+#define updateSymbolType(id) symbol_table[id].type_id = id
 
 #endif
