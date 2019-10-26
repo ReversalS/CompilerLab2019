@@ -55,6 +55,16 @@ ExtDef: Specifier ExtDecList SEMI   { FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3); }
 ExtDecList: VarDec  {
         FORM_SUBTREE_1($$,EXTDECLIST,$1);
         extdec_var($$, $1);
+        // AttrList* p = $$->attr.var_list;
+        // while(p != NULL){
+        //     if(p->attr.var_dec.opt_array_size_num > 0){
+        //         for(int i = 0; i < p->attr.var_dec.opt_array_size_num; i++){
+        //             printf("[%d]", p->attr.var_dec.opt_array_size[i]);
+        //         }
+        //         printf("\n");
+        //     }
+        //     p = p->next;
+        // }
     }
     | VarDec COMMA ExtDecList   {
         FORM_SUBTREE_3($$,EXTDECLIST,$1,$2,$3);
@@ -140,18 +150,57 @@ Stmt: Exp SEMI  { FORM_SUBTREE_2($$,STMT,$1,$2) }
     ;
 
 /* Local Definitions */
-DefList: Def DefList    { FORM_SUBTREE_2($$,DEFLIST,$1,$2) }
-    | /* empty */       {$$ = create_EP();}
+DefList: Def DefList {
+        FORM_SUBTREE_2($$,DEFLIST,$1,$2)
+        def_def_def($$, $1, $2);
+        // AttrList* p = $$->attr.vardef_list;
+        // while(p != NULL){
+        //     Var_Def* temp = &p->attr.var_def;
+        //     for(int i = 0; i < temp->var_num; i++){
+        //         printf("%s: ", temp->id[i]);
+        //         print_type(temp->type_id[i], 0, 1);
+        //     }
+        //     p = p->next;
+        //     printf("=========\n");
+        // }
+    }
+    | /* empty */ {
+        $$ = create_EP();
+    }
     ;
-Def: Specifier DecList SEMI { FORM_SUBTREE_3($$,DEF,$1,$2,$3) }
-    | Specifier error SEMI {$$ = create_EP();}
+Def: Specifier DecList SEMI {
+        FORM_SUBTREE_3($$,DEF,$1,$2,$3)
+        def_spec_dec_semi($$, $1, $2);
+        // Var_Def* temp = &$$->attr.vardef_list->attr.var_def;
+        // for(int i = 0; i < temp->var_num; i++){
+        //     printf("%s: ", temp->id[i]);
+        //     print_type(temp->type_id[i], 0, 1);
+        // }
+    }
+    | Specifier error SEMI {
+        $$ = create_EP();
+    }
     ;
-DecList: Dec    { FORM_SUBTREE_1($$,DECLIST,$1) }
-    | Dec COMMA DecList { FORM_SUBTREE_3($$,DECLIST,$1,$2,$3) }
-    | error COMMA DecList {$$ = create_EP();}
+DecList: Dec {
+        FORM_SUBTREE_1($$,DECLIST,$1)
+        dec_dec($$, $1);
+    }
+    | Dec COMMA DecList {
+        FORM_SUBTREE_3($$,DECLIST,$1,$2,$3)
+        dec_dec_comma_dec($$, $1, $3);
+    }
+    | error COMMA DecList {
+        $$ = create_EP();
+    }
     ;
-Dec: VarDec { FORM_SUBTREE_1($$,DEC,$1) }
-    | VarDec ASSIGNOP Exp   { FORM_SUBTREE_3($$,DEC,$1,$2,$3) }
+Dec: VarDec {
+        FORM_SUBTREE_1($$,DEC,$1)
+        dec_var($$, $1);
+    }
+    | VarDec ASSIGNOP Exp {
+        FORM_SUBTREE_3($$,DEC,$1,$2,$3)
+        dec_var_assignop_exp($$, $1, $3);
+    }
     ;
 
 /* Expressions */

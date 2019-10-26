@@ -12,6 +12,12 @@ void deconstruct_attrlist(AttrList* p)
             free(p->attr.var_dec.id);
             free(p->attr.var_dec.opt_array_size);
             break;
+        case VAR_DEF:
+            free(p->attr.var_def.type_id);
+            for (int i = 0; i < p->attr.var_def.var_num; i++) {
+                free(p->attr.var_def.id[i]);
+            }
+            free(p->attr.var_def.id);
         }
         deconstruct_attrlist(p->next);
         // free p
@@ -39,17 +45,13 @@ void copy_attrlist(AttrList** dest, AttrList* src)
         // TODO:
         switch (src->kind) {
         case ARRAY_SIZE:
-            (*dest)->attr.array_size = src->attr.array_size;
+            update((*dest), ARRAY_SIZE, (void*)(long)src->attr.array_size);
             break;
         case VAR_DEC:
-            copy_str(&(*dest)->attr.var_dec.id, src->attr.var_dec.id);
-            if (src->attr.var_dec.opt_array_size_num > 0) {
-                (*dest)->attr.var_dec.opt_array_size = (int*)malloc(src->attr.var_dec.opt_array_size_num);
-                for (int i = 0; i < src->attr.var_dec.opt_array_size_num; i++) {
-                    (*dest)->attr.var_dec.opt_array_size[i] = src->attr.var_dec.opt_array_size[i];
-                }
-            }
-            (*dest)->attr.var_dec.opt_array_size_num = src->attr.var_dec.opt_array_size_num;
+            update((*dest), VAR_DEC, (void*)&src->attr.var_dec);
+            break;
+        case VAR_DEF:
+            update((*dest), VAR_DEF, (void*)&src->attr.var_def);
             break;
         }
         copy_attrlist(&(*dest)->next, src->next);
@@ -95,6 +97,7 @@ void append(AttrList** p, ATTR_TYPE type, void* val)
 void update(AttrList* p, ATTR_TYPE type, void* val)
 {
     Var_Dec* q = NULL;
+    Var_Def* r = NULL;
     // TODO:
     switch (type) {
     case ARRAY_SIZE:
@@ -112,6 +115,18 @@ void update(AttrList* p, ATTR_TYPE type, void* val)
             }
         }
         p->attr.var_dec.opt_array_size_num = q->opt_array_size_num;
+        p->attr.var_dec.opt_init_type_id = q->opt_init_type_id;
+        break;
+    case VAR_DEF:
+        r = (Var_Def*)val;
+        p->kind = VAR_DEF;
+        p->attr.var_def.var_num = r->var_num;
+        p->attr.var_def.id = (char**)malloc(sizeof(char*) * r->var_num);
+        p->attr.var_def.type_id = (int*)malloc(sizeof(int) * r->var_num);
+        for (int i = 0; i < r->var_num; i++) {
+            copy_str(&p->attr.var_def.id[i], r->id[i]);
+            p->attr.var_def.type_id[i] = r->type_id[i];
+        }
         break;
     }
 }

@@ -1,12 +1,13 @@
 #include "semantic.h"
 
-int legal_struct_def(char* name){
+int legal_struct_def(char* name)
+{
     int type;
-    if(!existSymbol(name)){
+    if (!existSymbol(name)) {
         return -1;
     } else {
         type = getSymbolType(name);
-        if(type_set[type].kind == STRUCTURE && strcmp(type_set[type].u.structure.name, name) == 0){
+        if (type_set[type].kind == STRUCTURE && strcmp(type_set[type].u.structure.name, name) == 0) {
             return type;
         } else {
             return -1;
@@ -14,7 +15,8 @@ int legal_struct_def(char* name){
     }
 }
 
-Var_Dec* format_vardec(Node* var){
+Var_Dec* format_vardec(Node* var)
+{
     Var_Dec* temp = (Var_Dec*)malloc(sizeof(Var_Dec));
     int i = 0;
     memset(temp, 0, sizeof(Var_Dec));
@@ -34,6 +36,41 @@ Var_Dec* format_vardec(Node* var){
             i++;
             p = p->next;
         }
+    }
+    temp->opt_init_type_id = -1;
+    return temp;
+}
+
+Var_Def* format_vardef(Node* var, int type_id)
+{
+    Var_Def* temp = (Var_Def*)malloc(sizeof(Var_Def));
+    int i = 0;
+    int type1 = type_id;
+    memset(temp, 0, sizeof(Var_Def));
+    AttrList* p = var->attr.var_list;
+    while (p != NULL) {
+        i++;
+        p = p->next;
+    }
+    temp->var_num = i;
+    temp->id = (char**)malloc(sizeof(char*) * temp->var_num);
+    temp->type_id = (int*)malloc(sizeof(int) * temp->var_num);
+    p = var->attr.var_list;
+    for (int j = 0; j < temp->var_num; j++) {
+        copy_str(&temp->id[j], p->attr.var_dec.id);
+        if (p->attr.var_dec.opt_array_size_num > 0) {
+            for (int k = 0; k < p->attr.var_dec.opt_array_size_num; k++) {
+                type1 = construct_array(type1, p->attr.var_dec.opt_array_size[k]);
+            }
+            temp->type_id[j] = type1;
+            type1 = type_id;
+        } else {
+            temp->type_id[j] = type_id;
+        }
+        if (p->attr.var_dec.opt_init_type_id != -1 && temp->type_id[j] != p->attr.var_dec.opt_init_type_id) {
+            print_error(5, var->loc.line, NULL, NULL);
+        }
+        p = p->next;
     }
     return temp;
 }
@@ -65,31 +102,37 @@ void extdec_var_comma_extdec(Node* root, Node* var, Node* extdec)
     extdec_var(root, var);
 }
 
-void spec_type(Node* root, Node* type){
-    if(type->node_value.type == INT_T){
+void spec_type(Node* root, Node* type)
+{
+    if (type->node_value.type == INT_T) {
         root->attr.type_id = construct_basic(INT_BASIC);
     } else {
         root->attr.type_id = construct_basic(FLOAT_BASIC);
     }
 }
 
-void spec_struct(Node* root, Node* stru){
+void spec_struct(Node* root, Node* stru)
+{
     root->attr.type_id = stru->attr.type_id;
 }
 
-void struct_sturct_tag(Node* root, Node* tag){
+void struct_sturct_tag(Node* root, Node* tag)
+{
     root->attr.type_id = legal_struct_def(tag->attr.id);
 }
 
-void tag_id(Node* root, Node* id){
+void tag_id(Node* root, Node* id)
+{
     copy_str(&root->attr.id, id->node_value.id);
 }
 
-void opt_id(Node* root, Node* id){
+void opt_id(Node* root, Node* id)
+{
     copy_str(&root->attr.id, id->node_value.id);
 }
 
-void dec_var(Node* root, Node* var){
+void dec_var(Node* root, Node* var)
+{
     Var_Dec* temp = format_vardec(var);
     insert(&root->attr.var_list, VAR_DEC, temp);
     free(temp->id);
@@ -97,12 +140,46 @@ void dec_var(Node* root, Node* var){
     free(temp);
 }
 
-void dec_var_assignop_exp(Node* root, Node* var, Node* exp){
+void dec_var_assignop_exp(Node* root, Node* var, Node* exp)
+{
     // TODO: type check
 
     Var_Dec* temp = format_vardec(var);
+    temp->opt_init_type_id = exp->attr.type_id;
+
     insert(&root->attr.var_list, VAR_DEC, temp);
     free(temp->id);
     free(temp->opt_array_size);
     free(temp);
+}
+
+void dec_dec(Node* root, Node* dec)
+{
+    insert(&root->attr.var_list, VAR_DEC, (void*)&dec->attr.var_list->attr.var_dec);
+}
+
+void dec_dec_comma_dec(Node* root, Node* dec, Node* dec_list)
+{
+    copy_attrlist(&root->attr.var_list, dec_list->attr.var_list);
+    dec_dec(root, dec);
+}
+
+void def_spec_dec_semi(Node* root, Node* spec, Node* dec)
+{
+    Var_Def* temp = format_vardef(dec, spec->attr.type_id);
+    insert(&root->attr.vardef_list, VAR_DEF, temp);
+    free(temp->type_id);
+    for (int i = 0; i < temp->var_num; i++) {
+        free(temp->id[i]);
+    }
+    free(temp->id);
+    free(temp);
+}
+
+void def_def_def(Node* root, Node* def, Node* deflist)
+{
+    if (deflist->symbol_type != EPSILON) {
+        copy_attrlist(&root->attr.vardef_list, deflist->attr.vardef_list);
+    }
+    insert(&root->attr.vardef_list, VAR_DEF, &def->attr.vardef_list->attr.var_def);
 }

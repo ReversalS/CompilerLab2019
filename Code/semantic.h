@@ -14,6 +14,7 @@
 
 int legal_struct_def(char* name);
 Var_Dec* format_vardec(Node* var);
+Var_Def* format_vardef(Node* var, int type_id);
 
 /* VarDec */
 // VarDec: ID
@@ -51,4 +52,18 @@ void opt_id(Node* root, Node* id);
 void dec_var(Node* root, Node* var);
 // Dec: VarDec ASSIGNOP Exp
 void dec_var_assignop_exp(Node* root, Node* var, Node* exp);
+
+/* DecList */
+// DecList: Dec
+void dec_dec(Node* root, Node* dec);
+// DecList: Dec COMMA DecList
+void dec_dec_comma_dec(Node* root, Node* dec, Node* dec_list);
+
+/* Def */
+// Def: Specifier DecList SEMI
+void def_spec_dec_semi(Node* root, Node* spec, Node* dec);
+
+/* DefList */
+// DefList: Def DefList
+void def_def_def(Node* root, Node* def, Node* deflist);
 #endif
