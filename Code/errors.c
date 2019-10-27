@@ -1,7 +1,7 @@
 #include "errors.h"
 #include <stdio.h>
 
-void print_error(int type, int lineno, char* opt_msg, char* opt_msg_2)
+void print_error(int type, int lineno, char* opt_msg)
 {
     if (type < 1 || type > 17) {
         printf("Unknown error.\n");
@@ -34,7 +34,7 @@ void print_error(int type, int lineno, char* opt_msg, char* opt_msg_2)
         printf("Type mismatched for return.\n");
         break;
     case 9:
-        printf("Function \"%s\" is not applicable for arguments \"%s\".\n", opt_msg, opt_msg_2);
+        printf("Function \"%s\" is not applicable for arguments.\n", opt_msg);
         break;
     case 10:
         printf("\"%s\" is not an array.\n", opt_msg);
@@ -46,7 +46,7 @@ void print_error(int type, int lineno, char* opt_msg, char* opt_msg_2)
         printf("\"%s\" is not an integer.\n", opt_msg);
         break;
     case 13:
-        printf("Illegal use of \"%s\".\n", opt_msg);
+        printf("Illegal use of \".\".\n");
         break;
     case 14:
         printf("Non-existent field \"%s\".\n", opt_msg);

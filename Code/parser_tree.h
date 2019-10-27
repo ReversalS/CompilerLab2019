@@ -26,6 +26,10 @@ struct Node {
     struct {
         char* id;
         int type_id;
+        union {
+            int ival;
+            float fval;
+        } val;
         AttrList* opt_array;
         AttrList* var_list;
         AttrList* vardef_list;

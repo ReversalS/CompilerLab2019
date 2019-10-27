@@ -5,6 +5,7 @@
     // #define YYDEBUG 1
     #include"syntax.tab.h"
     #include"parser_tree.h"
+    #include "symbol_table.h"
     #define YY_USER_ACTION first_column = yycolumn; last_column = yycolumn + yyleng - 1; yycolumn += yyleng;
 
     /********** global variable **********/
@@ -127,7 +128,7 @@ NEWLINE {newline}
 {BADINT}        {invalid_id(yytext, yylineno); lexical_error = 1;}
     */
 {FLOAT} {
-    nv.fval = atof(yytext);
+    nv.fval = strtod(yytext, NULL);
     yylval = create_T(FLOAT_E, nv, yylineno, first_column);
     return FLOAT;
 }
@@ -262,12 +263,14 @@ NEWLINE {newline}
 {LC} {
     nv.other = LC_E;
     yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    // pushSymbolStack();
     return LC;
 }
 
 {RC} {
     nv.other = RC_E;
     yylval = create_T(OTHER_E, nv, yylineno, first_column);
+    // popSymbolStack();
     return RC;
 }
 

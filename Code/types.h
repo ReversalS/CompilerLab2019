@@ -4,6 +4,9 @@
 /********** include and macro **********/
 #define TYPE_SET_SIZE 1024
 #define RANDOM_NAME_NUM 64
+#define valid_type(type) (type >= 0 && type < type_num)
+#define kind(type) (type_set[type].kind)
+#define value(type) (type_set[type].u)
 
 /********** typedef **********/
 typedef struct Type Type;

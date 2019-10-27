@@ -269,28 +269,52 @@ Exp: Exp ASSIGNOP Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | Exp MINUS Exp { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | Exp STAR Exp  { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
     | Exp DIV Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | LP Exp RP { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | LP error RP {$$ = create_EP();}
-    | MINUS Exp { FORM_SUBTREE_2($$,EXP,$1,$2) }
-    | NOT Exp   { FORM_SUBTREE_2($$,EXP,$1,$2) }
-    | ID LP Args RP { FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4) }
-    | ID LP RP  { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | ID LP error RP {$$ = create_EP();}
-    | Exp LB Exp RB { FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4) }
-    | Exp LB error RB {$$ = create_EP();}
-    | Exp DOT ID    { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
+    | LP Exp RP {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_lp_exp_rp($$, $2);
+    }
+    | LP error RP {
+        $$ = create_EP();
+    }
+    | MINUS Exp {
+        FORM_SUBTREE_2($$,EXP,$1,$2)
+        exp_minus_exp($$, $2);
+    }
+    | NOT Exp {
+        FORM_SUBTREE_2($$,EXP,$1,$2)
+        exp_not_exp($$, $2);
+    }
+    | ID LP Args RP {
+        FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4)
+    }
+    | ID LP RP  {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+    }
+    | ID LP error RP {
+        $$ = create_EP();
+    }
+    | Exp LB Exp RB {
+        FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4)
+        exp_exp_lb_exp_rb($$, $1, $3);
+    }
+    | Exp LB error RB {
+        $$ = create_EP();
+    }
+    | Exp DOT ID {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_exp_dot_id($$, $1, $3);
+    }
     | ID {
         FORM_SUBTREE_1($$,EXP,$1)
         exp_id($$, $1);
-        print_type($$->attr.type_id, 0, 1);
     }
     | INT {
         FORM_SUBTREE_1($$,EXP,$1)
-        exp_int($$);
+        exp_int($$, $1);
     }
     | FLOAT {
         FORM_SUBTREE_1($$,EXP,$1)
-        exp_float($$);
+        exp_float($$, $1);
     }
     ;
 Args: Exp COMMA Args    { FORM_SUBTREE_3($$,ARGS,$1,$2,$3) }

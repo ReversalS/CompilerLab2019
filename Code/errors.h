@@ -2,6 +2,6 @@
 #define ERRORS_H
 
 /********** function definition **********/
-void print_error(int type, int lineno, char* opt_msg, char* opt_msg_2);
+void print_error(int type, int lineno, char* opt_msg);
 
 #endif

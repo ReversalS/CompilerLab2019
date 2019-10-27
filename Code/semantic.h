@@ -16,6 +16,7 @@ int legal_struct_def(char* name);
 int init_field(AttrList* vardef_list);
 unsigned hash_pjw(char* str);
 int dup_field(AttrList* vardef_list);
+void str_concat(char** dest, char* src[], int num);
 Var_Dec* format_vardec(Node* var);
 Var_Def* format_vardef(Node* var, int type_id);
 Para* format_para(Node* var, int type_id);
@@ -74,11 +75,25 @@ void def_def_def(Node* root, Node* def, Node* deflist);
 
 /* Exp */
 // Exp: INT
-void exp_int(Node* root);
+void exp_int(Node* root, Node* i);
 // Exp: FLOAT
-void exp_float(Node* root);
+void exp_float(Node* root, Node* f);
 // Exp: ID
 void exp_id(Node* root, Node* id);
+// Exp: Exp DOT ID
+void exp_exp_dot_id(Node* root, Node* exp, Node* id);
+// Exp: Exp LB Exp RB
+void exp_exp_lb_exp_rb(Node* root, Node* exp, Node* size);
+// TODO:Exp: ID LP RP
+void exp_id_lp_rp(Node* root, Node* id);
+// TODO:Exp: ID LP Args RP
+void exp_id_lp_args_rp(Node* root, Node* id, Node* args);
+// Exp: NOT Exp
+void exp_not_exp(Node* root, Node* exp);
+// Exp: MINUS Exp
+void exp_minus_exp(Node* root, Node* exp);
+// Exp: LP Exp RP
+void exp_lp_exp_rp(Node* root, Node* exp);
 
 /* ParamDec */
 // ParamDec: Specifier VarDec

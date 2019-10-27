@@ -33,6 +33,9 @@ void deconstruct_attrlist(AttrList* p)
 
 void copy_str(char** dest, char* src)
 {
+    if(src == NULL){
+        return ;
+    }
     (*dest) = (char*)malloc(strlen(src) + 1);
     strcpy((*dest), src);
 }

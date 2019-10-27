@@ -77,7 +77,7 @@ BOOL EQ(Type* t1, Type* t2)
 
 BOOL eq(int t1, int t2)
 {
-    if (t1 >= type_num || t2 >= type_num) {
+    if (!valid_type(t1) || !valid_type(t2)) {
         return FALSE;
     } else {
         if (type_set[t1].kind != type_set[t2].kind) {
@@ -211,7 +211,7 @@ int construct_function(char* name, int return_type)
 
 int add_member(int base, char* name, int type)
 {
-    if (base >= type_num) {
+    if (!valid_type(base)) {
         return -1;
     } else if (type_set[base].kind == STRUCTURE) {
         if (type_set[base].u.structure.fields == NULL) {
@@ -274,7 +274,7 @@ int add_member(int base, char* name, int type)
 
 void print_type(int type, int level, int newline)
 {
-    if(type >= type_num || type < 0){
+    if(!valid_type(type)){
         return ;
     }
     switch (type_set[type].kind) {
