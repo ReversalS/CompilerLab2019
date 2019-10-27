@@ -152,7 +152,7 @@ Node* create_ID(char* str, int line, int column)
 }
 
 // 为节点的子数组分配空间
-// TODO: 添加再分配功能？Free 原有 malloc 新空间
+// 添加再分配功能？Free 原有 malloc 新空间
 void allo_child(int num, Node* p)
 {
     p->child_num = num;

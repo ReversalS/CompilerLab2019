@@ -263,14 +263,14 @@ NEWLINE {newline}
 {LC} {
     nv.other = LC_E;
     yylval = create_T(OTHER_E, nv, yylineno, first_column);
-    // pushSymbolStack();
+    pushSymbolStack();
     return LC;
 }
 
 {RC} {
     nv.other = RC_E;
     yylval = create_T(OTHER_E, nv, yylineno, first_column);
-    // popSymbolStack();
+    popSymbolStack();
     return RC;
 }
 

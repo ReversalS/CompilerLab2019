@@ -1,11 +1,15 @@
-int a;
-float b;
 struct A{
     int x;
     float y;
 };
-struct A c;
 
-int main(){
-    
+int func1(int x){
+    int x;
+    return x + 1;
+}
+
+int func2(){
+    int y;
+    int z;
+    return func1(y, z);
 }

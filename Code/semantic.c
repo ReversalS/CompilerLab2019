@@ -20,19 +20,23 @@ int legal_struct_def(char* name)
 
 int init_field(AttrList* vardef_list)
 {
+    int is_init = 0;
     AttrList* p = vardef_list;
     while (p != NULL) {
         for (int i = 0; i < p->attr.var_def.var_num; i++) {
-            if (p->attr.var_def.init[i] == 1) {
+            if (valid_type(p->attr.var_def.init[i])) {
                 print_error(15, p->attr.var_def.line, p->attr.var_def.id[i]);
+                is_init = 1;
             }
         }
         p = p->next;
     }
+    return is_init;
 }
 
 int dup_field(AttrList* vardef_list)
 {
+    int is_dup = 0;
     AttrList* p = vardef_list;
     unsigned char* temp_hash = (unsigned char*)malloc(sizeof(unsigned char) * 997);
     unsigned hash = 0;
@@ -44,11 +48,13 @@ int dup_field(AttrList* vardef_list)
             if (temp_hash[hash] > 1) {
                 // duplicate
                 print_error(15, p->attr.var_def.line, p->attr.var_def.id[i]);
+                is_dup = 1;
             }
         }
         p = p->next;
     }
     free(temp_hash);
+    return is_dup;
 }
 
 void str_concat(char** dest, char* src[], int num)
@@ -129,10 +135,9 @@ Var_Def* format_vardef(Node* var, int type_id)
             temp->type_id[j] = type_id;
         }
         if (p->attr.var_dec.opt_init_type_id != -1) {
-            temp->init[j] = 1;
-        }
-        if (p->attr.var_dec.opt_init_type_id != -1 && temp->type_id[j] != p->attr.var_dec.opt_init_type_id) {
-            print_error(5, var->loc.line, NULL);
+            temp->init[j] = p->attr.var_dec.opt_init_type_id;
+        } else {
+            temp->init[j] = -1;
         }
         p = p->next;
     }
@@ -145,6 +150,7 @@ Para* format_para(Node* var, int type_id)
     AttrList* p = NULL;
     int temp_type = type_id;
     memset(temp, 0, sizeof(Para));
+    temp->line = var->loc.line;
     copy_str(&temp->id, var->attr.id);
     if (var->attr.opt_array != NULL) {
         p = var->attr.opt_array;
@@ -156,6 +162,16 @@ Para* format_para(Node* var, int type_id)
     } else {
         temp->type = type_id;
     }
+    return temp;
+}
+
+Para* format_arg(char* id, int type_id, int line)
+{
+    Para* temp = (Para*)malloc(sizeof(Para));
+    memset(temp, 0, sizeof(Para));
+    copy_str(&temp->id, id);
+    temp->type = type_id;
+    temp->line = line;
     return temp;
 }
 
@@ -205,23 +221,29 @@ void struct_opt_lc_def_rc(Node* root, Node* opt, Node* def)
     int ret = -1;
     int index = -1;
     AttrList* p;
+    int is_dup = 0;
+    int is_init = 0;
+    is_dup = dup_field(def->attr.vardef_list);
+    is_init = init_field(def->attr.vardef_list);
+    if (is_dup || is_init) {
+        root->attr.type_id = -1;
+        return;
+    }
+
     if (opt->attr.id != NULL) {
         index = insertSymbol(opt->attr.id, 1, -1, root->loc.line, root->loc.column, 0);
         if (index == -1) {
             // redefine
             print_error(16, opt->loc.line, opt->attr.id);
-            dup_field(def->attr.vardef_list);
-            init_field(def->attr.vardef_list);
             root->attr.type_id = -1;
         } else {
             ret = construct_struct(opt->attr.id);
-            dup_field(def->attr.vardef_list);
-            init_field(def->attr.vardef_list);
             if (ret == -1) {
                 // redefine
                 // impossible
                 printf("WTF\n");
             }
+
             p = def->attr.vardef_list;
             while (p != NULL) {
                 for (int i = 0; i < p->attr.var_def.var_num; i++) {
@@ -233,6 +255,7 @@ void struct_opt_lc_def_rc(Node* root, Node* opt, Node* def)
             root->attr.type_id = ret;
         }
     } else {
+        // anonymous struct
         char* name = get_random_name();
         ret = construct_struct(name);
         dup_field(def->attr.vardef_list);
@@ -278,8 +301,6 @@ void dec_var(Node* root, Node* var)
 
 void dec_var_assignop_exp(Node* root, Node* var, Node* exp)
 {
-    // TODO: type check
-
     Var_Dec* temp = format_vardec(var);
     temp->opt_init_type_id = exp->attr.type_id;
 
@@ -303,6 +324,19 @@ void dec_dec_comma_dec(Node* root, Node* dec, Node* dec_list)
 void def_spec_dec_semi(Node* root, Node* spec, Node* dec)
 {
     Var_Def* temp = format_vardef(dec, spec->attr.type_id);
+    int index = -1;
+    for (int i = 0; i < temp->var_num; i++) {
+        if (valid_type(temp->type_id[i])) {
+            if (valid_type(temp->init[i]) && !eq(temp->init[i], temp->type_id[i])) {
+                print_error(5, temp->line, NULL);
+            } else {
+                index = insertSymbol(temp->id[i], 0, temp->type_id[i], temp->line, 0, 0);
+                if (index == -1) {
+                    print_error(3, temp->line, temp->id[i]);
+                }
+            }
+        }
+    }
     insert(&root->attr.vardef_list, VAR_DEF, temp);
     free(temp->type_id);
     for (int i = 0; i < temp->var_num; i++) {
@@ -349,7 +383,7 @@ void exp_id(Node* root, Node* id)
     copy_str(&root->attr.id, id->node_value.id);
     if (getSymbol(id->node_value.id, 0) == NULL) {
         // not found
-        print_error(1, root->loc.line, id->node_value.id);
+        print_error(1, id->loc.line, id->node_value.id);
     } else {
         root->attr.type_id = getSymbol(id->node_value.id, 0)->type_id;
         root->attr.is_left = 1;
@@ -401,6 +435,72 @@ void exp_exp_lb_exp_rb(Node* root, Node* exp, Node* size)
             return;
         } else {
             print_error(12, size->loc.line, size->attr.id);
+        }
+    }
+}
+
+void exp_id_lp_rp(Node* root, Node* id)
+{
+    int func_type = -1;
+    int return_type = -1;
+    concat3(root->attr.id, id->node_value.id, "(", ")");
+    if (getSymbol(id->node_value.id, 1) == NULL) {
+        print_error(2, id->loc.line, id->node_value.id);
+        return;
+    } else {
+        func_type = getSymbol(id->node_value.id, 1)->type_id;
+        if (!valid_type(func_type) || kind(func_type) != FUNCTION) {
+            print_error(11, id->loc.line, id->node_value.id);
+            return;
+        } else {
+            return_type = value(func_type).function.return_type;
+            if (value(func_type).function.parameters == NULL) {
+                root->attr.type_id = return_type;
+            } else {
+                print_error(9, id->loc.line, id->node_value.id);
+                return;
+            }
+        }
+    }
+}
+
+void exp_id_lp_args_rp(Node* root, Node* id, Node* args)
+{
+    int func_type = -1;
+    int return_type = -1;
+    concat4(root->attr.id, id->node_value.id, "(", args->attr.id, ")");
+    if (getSymbol(id->node_value.id, 1) == NULL) {
+        print_error(2, id->loc.line, id->node_value.id);
+        return;
+    } else {
+        func_type = getSymbol(id->node_value.id, 1)->type_id;
+        if (!valid_type(func_type) || kind(func_type) != FUNCTION) {
+            print_error(11, id->loc.line, id->node_value.id);
+            return;
+        } else {
+            return_type = value(func_type).function.return_type;
+
+            if (value(func_type).function.parameters == NULL) {
+                print_error(9, id->loc.line, id->node_value.id);
+                return;
+            } else {
+                VarList* p = value(func_type).function.parameters;
+                AttrList* q = args->attr.para_list;
+                while (p != NULL && q != NULL) {
+                    if (!eq(p->type, q->attr.para.type)) {
+                        print_error(9, id->loc.line, id->node_value.id);
+                        return;
+                    }
+                    p = p->next;
+                    q = q->next;
+                }
+                if (p != NULL || q != NULL) {
+                    print_error(9, id->loc.line, id->node_value.id);
+                    return;
+                } else {
+                    root->attr.type_id = return_type;
+                }
+            }
         }
     }
 }
@@ -524,7 +624,8 @@ void exp_exp_relop_exp(Node* root, Node* left, Node* rel, Node* right)
     }
 }
 
-void exp_exp_or_exp(Node* root, Node* left, Node* right){
+void exp_exp_or_exp(Node* root, Node* left, Node* right)
+{
     int left_type = left->attr.type_id;
     int right_type = right->attr.type_id;
     concat3(root->attr.id, left->attr.id, "||", right->attr.id);
@@ -538,7 +639,8 @@ void exp_exp_or_exp(Node* root, Node* left, Node* right){
     }
 }
 
-void exp_exp_and_exp(Node* root, Node* left, Node* right){
+void exp_exp_and_exp(Node* root, Node* left, Node* right)
+{
     int left_type = left->attr.type_id;
     int right_type = right->attr.type_id;
     concat3(root->attr.id, left->attr.id, "&&", right->attr.id);
@@ -548,6 +650,26 @@ void exp_exp_and_exp(Node* root, Node* left, Node* right){
         return;
     } else {
         print_error(7, left->loc.line, NULL);
+        return;
+    }
+}
+
+void exp_exp_assignop_exp(Node* root, Node* left, Node* right)
+{
+    int left_type = left->attr.type_id;
+    int right_type = right->attr.type_id;
+    concat3(root->attr.id, left->attr.id, "=", right->attr.id);
+
+    if (type_eq(left_type, right_type) && kind(left_type) != FUNCTION) {
+        if (left->attr.is_left) {
+            root->attr.type_id = left_type;
+            return;
+        } else {
+            print_error(6, left->loc.line, NULL);
+            return;
+        }
+    } else {
+        print_error(5, left->loc.line, NULL);
         return;
     }
 }
@@ -610,6 +732,43 @@ void extdef_spec_extdec_semi(Node* root, Node* spec, Node* extdec)
     }
 }
 
+void extdef_spec_fun_comp(Node* root, Node* spec, Node* fun, Node* comp)
+{
+    int return_type = spec->attr.type_id;
+    int index = -1;
+    int ret = -1;
+    int temp = -1;
+    if (!valid_type(return_type)) {
+        return;
+    }
+    index = insertSymbol(fun->attr.id, 1, -1, fun->loc.line, fun->loc.column, 0);
+    if (index == -1) {
+        // redefine
+        print_error(4, fun->loc.line, fun->attr.id);
+        return;
+    } else {
+        ret = construct_function(fun->attr.id, return_type);
+        updateSymbolType(index, ret);
+        AttrList* p = fun->attr.para_list;
+        while (p != NULL) {
+            temp = insertSymbol(p->attr.para.id, 0, p->attr.para.type, p->attr.para.line, 0, 0);
+            if (temp == -1) {
+                print_error(3, p->attr.para.line, p->attr.para.id);
+            } else {
+                add_member(ret, p->attr.para.id, p->attr.para.type);
+            }
+            p = p->next;
+        }
+        AttrList* q = comp->attr.para_list;
+        while (q != NULL) {
+            if (!eq(q->attr.para.type, return_type)) {
+                print_error(8, q->attr.para.line, NULL);
+            }
+            q = q->next;
+        }
+    }
+}
+
 void extdef_spec_semi(Node* root, Node* spec)
 {
     // do nothing
@@ -623,4 +782,87 @@ void extdef_extdef_extdef(Node* root, Node* extdef, Node* extdeflist)
 void program_extdef(Node* root, Node* extdef)
 {
     // do nothing
+}
+
+void arg_exp_comma_arg(Node* root, Node* exp, Node* arg)
+{
+    concat3(root->attr.id, exp->attr.id, ", ", arg->attr.id);
+    copy_attrlist(&root->attr.para_list, arg->attr.para_list);
+    arg_exp(root, exp);
+}
+
+void arg_exp(Node* root, Node* exp)
+{
+    copy_str(&root->attr.id, exp->attr.id);
+    Para* temp = format_arg(exp->attr.id, exp->attr.type_id, exp->loc.line);
+    insert(&root->attr.para_list, PARA, temp);
+    free(temp->id);
+    free(temp);
+}
+
+void stmt_exp_semi(Node* root, Node* exp)
+{
+    // do nothing
+}
+
+void stmt_compst(Node* root, Node* compst)
+{
+    copy_attrlist(&root->attr.para_list, compst->attr.para_list);
+}
+
+void stmt_return_exp_semi(Node* root, Node* exp)
+{
+    Para* temp = format_arg(exp->attr.id, exp->attr.type_id, exp->loc.line);
+    insert(&root->attr.para_list, PARA, (void*)temp);
+    free(temp->id);
+    free(temp);
+}
+
+void stmt_if_lp_exp_rp_stmt(Node* root, Node* exp, Node* stmt)
+{
+    copy_attrlist(&root->attr.para_list, stmt->attr.para_list);
+    int type = exp->attr.type_id;
+    if (!eq(type, construct_basic(INT_BASIC))) {
+        print_error(7, exp->loc.line, NULL);
+    }
+}
+
+void stmt_if_lp_exp_rp_stmt_else_stmt(Node* root, Node* exp, Node* if_stmt, Node* else_stmt)
+{
+    AttrList* p = else_stmt->attr.para_list;
+    copy_attrlist(&root->attr.para_list, if_stmt->attr.para_list);
+    int type = exp->attr.type_id;
+    if (!eq(type, construct_basic(INT_BASIC))) {
+        print_error(7, exp->loc.line, NULL);
+    }
+    while (p != NULL) {
+        append(&root->attr.para_list, PARA, (void*)&p->attr.para);
+        p = p->next;
+    }
+}
+
+void stmt_while_lp_exp_rp_stmt(Node* root, Node* exp, Node* stmt)
+{
+    copy_attrlist(&root->attr.para_list, stmt->attr.para_list);
+    int type = exp->attr.type_id;
+    if (!eq(type, construct_basic(INT_BASIC))) {
+        print_error(7, exp->loc.line, NULL);
+    }
+}
+
+void stmt_stmt_stmt(Node* root, Node* stmt, Node* stmt_list)
+{
+    copy_attrlist(&root->attr.para_list, stmt->attr.para_list);
+    if (stmt_list->symbol_type != EPSILON) {
+        AttrList* p = stmt_list->attr.para_list;
+        while (p != NULL) {
+            append(&root->attr.para_list, PARA, (void*)&p->attr.para);
+            p = p->next;
+        }
+    }
+}
+
+void compst_lc_def_stmt_rc(Node* root, Node* def, Node* stmt)
+{
+    copy_attrlist(&root->attr.para_list, stmt->attr.para_list);
 }

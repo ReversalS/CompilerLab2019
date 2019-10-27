@@ -13,6 +13,7 @@ int main(int argc, char const* argv[])
 {
     init_type_set();
     initSymbolTable();
+
     if (argc <= 1) {
         return 1;
     }
@@ -24,10 +25,12 @@ int main(int argc, char const* argv[])
     yyrestart(f);
     // yydebug = 1;
     yyparse();
-    if (syntax_error == 0 && lexical_error == 0){
-        // print_tree(global_root, 0);
-        ;
-    }
+
+    // if (syntax_error == 0 && lexical_error == 0){
+    //     print_tree(global_root, 0);
+    //     ;
+    // }
+    
     if (global_root != NULL){
         deconstruct(global_root);
     }

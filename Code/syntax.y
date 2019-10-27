@@ -61,6 +61,7 @@ ExtDef: Specifier ExtDecList SEMI {
     }
     | Specifier FunDec CompSt {
         FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3);
+        extdef_spec_fun_comp($$, $1, $2, $3);
     }
     | error SEMI {
         $$ = create_EP();
@@ -144,7 +145,9 @@ VarDec: ID  {
         FORM_SUBTREE_4($$,VARDEC,$1,$2,$3,$4)
         var_var_lb_int_rb($$, $1, $3);
     }
-    | VarDec LB error RB {$$ = create_EP();}
+    | VarDec LB error RB {
+        $$ = create_EP();
+    }
     ;
 FunDec: ID LP VarList RP  {
         FORM_SUBTREE_4($$,FUNDEC,$1,$2,$3,$4)
@@ -182,7 +185,9 @@ VarList: ParamDec COMMA VarList {
         FORM_SUBTREE_1($$,VARLIST,$1)
         var_para($$, $1);
     }
-    | error COMMA VarList {$$ = create_EP();}
+    | error COMMA VarList {
+        $$ = create_EP();
+    }
     ;
 ParamDec: Specifier VarDec {
         FORM_SUBTREE_2($$,PARAMDEC,$1,$2)
@@ -191,19 +196,49 @@ ParamDec: Specifier VarDec {
     ;
 
 /* Statements */
-CompSt: LC DefList StmtList RC  { FORM_SUBTREE_4($$,COMPST,$1,$2,$3,$4) }
+CompSt: LC DefList StmtList RC {
+        FORM_SUBTREE_4($$,COMPST,$1,$2,$3,$4)
+        compst_lc_def_stmt_rc($$, $2, $3);
+    }
     ;
-StmtList: Stmt StmtList  { FORM_SUBTREE_2($$,STMTLIST,$1,$2) }
-    | /* empty */        {$$ = create_EP();}
+StmtList: Stmt StmtList {
+        FORM_SUBTREE_2($$,STMTLIST,$1,$2)
+        stmt_stmt_stmt($$, $1, $2);
+    }
+    | /* empty */ {
+        $$ = create_EP();
+    }
     ;
-Stmt: Exp SEMI  { FORM_SUBTREE_2($$,STMT,$1,$2) }
-    | CompSt  { FORM_SUBTREE_1($$,STMT,$1) }
-    | RETURN Exp SEMI   { FORM_SUBTREE_3($$,STMT,$1,$2,$3) }
-    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE   { FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5) }
-    | IF LP Exp RP Stmt ELSE Stmt   { FORM_SUBTREE_7($$,STMT,$1,$2,$3,$4,$5,$6,$7) }
-    | WHILE LP Exp RP Stmt  { FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5) }
-    | error SEMI    {$$ = create_EP();}
-    | error {$$ = create_EP();}
+Stmt: Exp SEMI {
+        FORM_SUBTREE_2($$,STMT,$1,$2)
+        stmt_exp_semi($$, $1);
+    }
+    | CompSt {
+        FORM_SUBTREE_1($$,STMT,$1)
+        stmt_compst($$, $1);
+    }
+    | RETURN Exp SEMI {
+        FORM_SUBTREE_3($$,STMT,$1,$2,$3)
+        stmt_return_exp_semi($$, $2);
+    }
+    | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {
+        FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5)
+        stmt_if_lp_exp_rp_stmt($$, $3, $5);
+    }
+    | IF LP Exp RP Stmt ELSE Stmt {
+        FORM_SUBTREE_7($$,STMT,$1,$2,$3,$4,$5,$6,$7)
+        stmt_if_lp_exp_rp_stmt_else_stmt($$, $3, $5, $7);
+    }
+    | WHILE LP Exp RP Stmt {
+        FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5)
+        stmt_while_lp_exp_rp_stmt($$, $3, $5);
+    }
+    | error SEMI {
+        $$ = create_EP();
+    }
+    | error {
+        $$ = create_EP();
+    }
     ;
 
 /* Local Definitions */
@@ -263,6 +298,7 @@ Dec: VarDec {
 /* Expressions */
 Exp: Exp ASSIGNOP Exp{
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_exp_assignop_exp($$, $1, $3);
     }
     | Exp AND Exp {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
@@ -309,9 +345,17 @@ Exp: Exp ASSIGNOP Exp{
     }
     | ID LP Args RP {
         FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4)
+        exp_id_lp_args_rp($$, $1, $3);
+        // AttrList* p = $3->attr.para_list;
+        // while(p != NULL){
+        //     printf("%s ", p->attr.para.id);
+        //     print_type(p->attr.para.type, 0, 1);
+        //     p = p->next;
+        // }
     }
     | ID LP RP  {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_id_lp_rp($$, $1);
     }
     | ID LP error RP {
         $$ = create_EP();
@@ -340,7 +384,15 @@ Exp: Exp ASSIGNOP Exp{
         exp_float($$, $1);
     }
     ;
-Args: Exp COMMA Args    { FORM_SUBTREE_3($$,ARGS,$1,$2,$3) }
-    | Exp   { FORM_SUBTREE_1($$,ARGS,$1) }
-    | error COMMA Args {$$ = create_EP();}
+Args: Exp COMMA Args {
+        FORM_SUBTREE_3($$,ARGS,$1,$2,$3)
+        arg_exp_comma_arg($$, $1, $3);
+    }
+    | Exp {
+        FORM_SUBTREE_1($$,ARGS,$1)
+        arg_exp($$, $1);
+    }
+    | error COMMA Args {
+        $$ = create_EP();
+    }
     ;

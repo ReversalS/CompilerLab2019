@@ -41,6 +41,7 @@ void str_concat(char** dest, char* src[], int num);
 Var_Dec* format_vardec(Node* var);
 Var_Def* format_vardef(Node* var, int type_id);
 Para* format_para(Node* var, int type_id);
+Para* format_arg(char* id, int type_id, int line);
 
 /* VarDec */
 // VarDec: ID
@@ -105,9 +106,9 @@ void exp_id(Node* root, Node* id);
 void exp_exp_dot_id(Node* root, Node* exp, Node* id);
 // Exp: Exp LB Exp RB
 void exp_exp_lb_exp_rb(Node* root, Node* exp, Node* size);
-// TODO:Exp: ID LP RP
+// Exp: ID LP RP
 void exp_id_lp_rp(Node* root, Node* id);
-// TODO:Exp: ID LP Args RP
+// Exp: ID LP Args RP
 void exp_id_lp_args_rp(Node* root, Node* id, Node* args);
 // Exp: NOT Exp
 void exp_not_exp(Node* root, Node* exp);
@@ -151,9 +152,9 @@ void fun_id_lp_rp(Node* root, Node* id);
 /* ExtDef */
 // ExtDef: Specifier ExtDecList SEMI
 void extdef_spec_extdec_semi(Node* root, Node* spec, Node* extdec);
-// Specifier SEMI
+// ExtDef: Specifier SEMI
 void extdef_spec_semi(Node* root, Node* spec);
-// TODO: Specifier FunDec CompSt
+// ExtDef: Specifier FunDec CompSt
 void extdef_spec_fun_comp(Node* root, Node* spec, Node* fun, Node* comp);
 
 /* ExtdefList */
@@ -163,4 +164,32 @@ void extdef_extdef_extdef(Node* root, Node* extdef, Node* extdeflist);
 /* Program */
 // Program: ExtDefList
 void program_extdef(Node* root, Node* extdef);
+
+/* Args */
+// Args: Exp COMMA Args
+void arg_exp_comma_arg(Node* root, Node* exp, Node* arg);
+// Args: Exp
+void arg_exp(Node* root, Node* exp);
+
+/* Stmt */
+// Stmt: Exp SEMI
+void stmt_exp_semi(Node* root, Node* exp);
+// Stmt: CompSt
+void stmt_compst(Node* root, Node* compst);
+// Stmt: RETURN Exp SEMI
+void stmt_return_exp_semi(Node* root, Node* exp);
+// Stmt: IF LP Exp RP Stmt
+void stmt_if_lp_exp_rp_stmt(Node* root, Node* exp, Node* stmt);
+// Stmt: IF LP Exp RP Stmt ELSE Stmt
+void stmt_if_lp_exp_rp_stmt_else_stmt(Node* root, Node* exp, Node* if_stmt, Node* else_stmt);
+// Stmt: WHILE LP Exp RP Stmt
+void stmt_while_lp_exp_rp_stmt(Node* root, Node* exp, Node* stmt);
+
+/* StmtList */
+// StmtList: Stmt StmtList
+void stmt_stmt_stmt(Node* root, Node* stmt, Node* stmt_list);
+
+/* CompSt */
+// CompSt: LC DefList StmtList RC
+void compst_lc_def_stmt_rc(Node* root, Node* def, Node* stmt);
 #endif

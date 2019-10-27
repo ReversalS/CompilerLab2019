@@ -6,7 +6,6 @@ void deconstruct_attrlist(AttrList* p)
         return;
     } else {
         // free attr
-        // TODO:
         switch (p->kind) {
         case VAR_DEC:
             free(p->attr.var_dec.id);
@@ -50,7 +49,6 @@ void copy_attrlist(AttrList** dest, AttrList* src)
         memset((*dest), 0, sizeof(AttrList));
         (*dest)->kind = src->kind;
         (*dest)->next = NULL;
-        // TODO:
         switch (src->kind) {
         case ARRAY_SIZE:
             update((*dest), ARRAY_SIZE, (void*)(long)src->attr.array_size);
@@ -63,6 +61,7 @@ void copy_attrlist(AttrList** dest, AttrList* src)
             break;
         case PARA:
             update((*dest), PARA, (void*)&src->attr.para);
+            break;
         }
         copy_attrlist(&(*dest)->next, src->next);
     }
@@ -109,7 +108,6 @@ void update(AttrList* p, ATTR_TYPE type, void* val)
     Var_Dec* q = NULL;
     Var_Def* r = NULL;
     Para* s = NULL;
-    // TODO:
     switch (type) {
     case ARRAY_SIZE:
         p->kind = ARRAY_SIZE;
@@ -146,6 +144,7 @@ void update(AttrList* p, ATTR_TYPE type, void* val)
         p->kind = PARA;
         s = (Para*)val;
         p->attr.para.type = s->type;
+        p->attr.para.line = s->line;
         copy_str(&p->attr.para.id, s->id);
         break;
     }

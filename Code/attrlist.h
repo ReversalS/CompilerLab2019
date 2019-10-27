@@ -39,6 +39,7 @@ struct Var_Def{
 struct Para{
     char* id;
     int type;
+    int line;
 };
 
 struct AttrList {
@@ -61,14 +62,11 @@ void deconstruct_attrlist(AttrList* p);
 void copy_str(char** dest, char* src);
 
 // copy construct
-// TODO:
 void copy_attrlist(AttrList** dest, AttrList* src);
-
 void insert(AttrList** p, ATTR_TYPE type, void* val);
 void append(AttrList** p, ATTR_TYPE type, void* val);
 
 // constructor
-// TODO:
 void update(AttrList* p, ATTR_TYPE type, void* val);
 
 #endif
