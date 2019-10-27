@@ -10,6 +10,27 @@
 // types.h
 #include "symbol_table.h"
 
+#define concat2(dest, s1, s2) \
+    char* src[2];             \
+    src[0] = s1;              \
+    src[1] = s2;              \
+    str_concat(&dest, src, 2);
+
+#define concat3(dest, s1, s2, s3) \
+    char* src[3];                 \
+    src[0] = s1;                  \
+    src[1] = s2;                  \
+    src[2] = s3;                  \
+    str_concat(&dest, src, 3);
+
+#define concat4(dest, s1, s2, s3, s4) \
+    char* src[4];                     \
+    src[0] = s1;                      \
+    src[1] = s2;                      \
+    src[2] = s3;                      \
+    src[3] = s4;                      \
+    str_concat(&dest, src, 4);
+
 /********** function definition **********/
 
 int legal_struct_def(char* name);
@@ -94,6 +115,22 @@ void exp_not_exp(Node* root, Node* exp);
 void exp_minus_exp(Node* root, Node* exp);
 // Exp: LP Exp RP
 void exp_lp_exp_rp(Node* root, Node* exp);
+// Exp: Exp DIV Exp
+void exp_exp_div_exp(Node* root, Node* left, Node* right);
+// Exp: Exp STAR Exp
+void exp_exp_star_exp(Node* root, Node* left, Node* right);
+// Exp: Exp MINUS Exp
+void exp_exp_minus_exp(Node* root, Node* left, Node* right);
+// Exp: Exp PLUS Exp
+void exp_exp_plus_exp(Node* root, Node* left, Node* right);
+// Exp: Exp RELOP Exp
+void exp_exp_relop_exp(Node* root, Node* left, Node* rel, Node* right);
+// Exp: Exp OR Exp
+void exp_exp_or_exp(Node* root, Node* left, Node* right);
+// Exp: Exp AND Exp
+void exp_exp_and_exp(Node* root, Node* left, Node* right);
+// Exp: Exp ASSIGNOP Exp
+void exp_exp_assignop_exp(Node* root, Node* left, Node* right);
 
 /* ParamDec */
 // ParamDec: Specifier VarDec
@@ -115,7 +152,7 @@ void fun_id_lp_rp(Node* root, Node* id);
 // ExtDef: Specifier ExtDecList SEMI
 void extdef_spec_extdec_semi(Node* root, Node* spec, Node* extdec);
 // Specifier SEMI
-void extdef_spec_semi(Node*root, Node* spec);
+void extdef_spec_semi(Node* root, Node* spec);
 // TODO: Specifier FunDec CompSt
 void extdef_spec_fun_comp(Node* root, Node* spec, Node* fun, Node* comp);
 

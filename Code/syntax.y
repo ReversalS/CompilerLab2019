@@ -261,14 +261,37 @@ Dec: VarDec {
     ;
 
 /* Expressions */
-Exp: Exp ASSIGNOP Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | Exp AND Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | Exp OR Exp    { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | Exp RELOP Exp { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | Exp PLUS Exp  { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | Exp MINUS Exp { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | Exp STAR Exp  { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
-    | Exp DIV Exp   { FORM_SUBTREE_3($$,EXP,$1,$2,$3) }
+Exp: Exp ASSIGNOP Exp{
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+    }
+    | Exp AND Exp {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_exp_and_exp($$, $1, $3);
+    }
+    | Exp OR Exp {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_exp_or_exp($$, $1, $3);
+    }
+    | Exp RELOP Exp {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_exp_relop_exp($$, $1, $2, $3);
+    }
+    | Exp PLUS Exp {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_exp_plus_exp($$, $1, $3);
+    }
+    | Exp MINUS Exp {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_exp_minus_exp($$, $1, $3);
+    }
+    | Exp STAR Exp {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_exp_star_exp($$, $1, $3);
+    }
+    | Exp DIV Exp {
+        FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        exp_exp_div_exp($$, $1, $3);
+    }
     | LP Exp RP {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
         exp_lp_exp_rp($$, $2);

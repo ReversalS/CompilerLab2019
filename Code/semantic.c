@@ -352,16 +352,13 @@ void exp_id(Node* root, Node* id)
         print_error(1, root->loc.line, id->node_value.id);
     } else {
         root->attr.type_id = getSymbol(id->node_value.id, 0)->type_id;
+        root->attr.is_left = 1;
     }
 }
 
 void exp_exp_dot_id(Node* root, Node* exp, Node* id)
 {
-    char* src[3];
-    src[0] = exp->attr.id;
-    src[1] = ".";
-    src[2] = id->node_value.id;
-    str_concat(&root->attr.id, src, 3);
+    concat3(root->attr.id, exp->attr.id, ".", id->node_value.id);
 
     if (!valid_type(exp->attr.type_id)) {
         print_error(13, root->loc.line, NULL);
@@ -376,6 +373,7 @@ void exp_exp_dot_id(Node* root, Node* exp, Node* id)
         while (q != NULL) {
             if (strcmp(id->node_value.id, q->name) == 0) {
                 root->attr.type_id = q->type;
+                root->attr.is_left = 1;
                 return;
             }
             q = q->next;
@@ -387,12 +385,7 @@ void exp_exp_dot_id(Node* root, Node* exp, Node* id)
 
 void exp_exp_lb_exp_rb(Node* root, Node* exp, Node* size)
 {
-    char* src[4];
-    src[0] = exp->attr.id;
-    src[1] = "[";
-    src[2] = size->attr.id;
-    src[3] = "]";
-    str_concat(&root->attr.id, src, 4);
+    concat4(root->attr.id, exp->attr.id, "[", size->attr.id, "]");
 
     int base_type = exp->attr.type_id;
     int index_type = size->attr.type_id;
@@ -404,6 +397,7 @@ void exp_exp_lb_exp_rb(Node* root, Node* exp, Node* size)
     } else {
         if (kind(index_type) == BASIC && value(index_type).basic == INT_BASIC) {
             root->attr.type_id = value(base_type).array.elem;
+            root->attr.is_left = 1;
             return;
         } else {
             print_error(12, size->loc.line, size->attr.id);
@@ -413,11 +407,8 @@ void exp_exp_lb_exp_rb(Node* root, Node* exp, Node* size)
 
 void exp_not_exp(Node* root, Node* exp)
 {
-    char* src[2];
     int type_id = exp->attr.type_id;
-    src[0] = "!";
-    src[1] = exp->attr.id;
-    str_concat(&root->attr.id, src, 2);
+    concat2(root->attr.id, "!", exp->attr.id);
 
     if (valid_type(type_id) && kind(type_id) == BASIC && value(type_id).basic == INT_BASIC) {
         root->attr.type_id = type_id;
@@ -430,11 +421,8 @@ void exp_not_exp(Node* root, Node* exp)
 
 void exp_minus_exp(Node* root, Node* exp)
 {
-    char* src[2];
     int type_id = exp->attr.type_id;
-    src[0] = "-";
-    src[1] = exp->attr.id;
-    str_concat(&root->attr.id, src, 2);
+    concat2(root->attr.id, "-", exp->attr.id);
 
     if (valid_type(type_id) && kind(type_id) == BASIC) {
         root->attr.type_id = type_id;
@@ -445,14 +433,123 @@ void exp_minus_exp(Node* root, Node* exp)
     }
 }
 
-void exp_lp_exp_rp(Node* root, Node* exp){
-    char* src[3];
-    src[0] = "(";
-    src[1] = exp->attr.id;
-    src[2] = ")";
-    str_concat(&root->attr.id, src, 3);
+void exp_lp_exp_rp(Node* root, Node* exp)
+{
+    concat3(root->attr.id, "(", exp->attr.id, ")");
 
     root->attr.type_id = exp->attr.type_id;
+    root->attr.is_left = exp->attr.is_left;
+}
+
+void exp_exp_div_exp(Node* root, Node* left, Node* right)
+{
+    int left_type = left->attr.type_id;
+    int right_type = right->attr.type_id;
+    concat3(root->attr.id, left->attr.id, "/", right->attr.id);
+
+    if (arithmetic(left_type, right_type)) {
+        root->attr.type_id = left_type;
+        return;
+    } else {
+        print_error(7, left->loc.line, NULL);
+        return;
+    }
+}
+
+void exp_exp_star_exp(Node* root, Node* left, Node* right)
+{
+    int left_type = left->attr.type_id;
+    int right_type = right->attr.type_id;
+    concat3(root->attr.id, left->attr.id, "*", right->attr.id);
+
+    if (arithmetic(left_type, right_type)) {
+        root->attr.type_id = left_type;
+        return;
+    } else {
+        print_error(7, left->loc.line, NULL);
+        return;
+    }
+}
+
+void exp_exp_minus_exp(Node* root, Node* left, Node* right)
+{
+    int left_type = left->attr.type_id;
+    int right_type = right->attr.type_id;
+    concat3(root->attr.id, left->attr.id, "-", right->attr.id);
+
+    if (arithmetic(left_type, right_type)) {
+        root->attr.type_id = left_type;
+        return;
+    } else {
+        print_error(7, left->loc.line, NULL);
+        return;
+    }
+}
+
+void exp_exp_plus_exp(Node* root, Node* left, Node* right)
+{
+    int left_type = left->attr.type_id;
+    int right_type = right->attr.type_id;
+    concat3(root->attr.id, left->attr.id, "+", right->attr.id);
+
+    if (arithmetic(left_type, right_type)) {
+        root->attr.type_id = left_type;
+        return;
+    } else {
+        print_error(7, left->loc.line, NULL);
+        return;
+    }
+}
+
+void exp_exp_relop_exp(Node* root, Node* left, Node* rel, Node* right)
+{
+    int left_type = left->attr.type_id;
+    int right_type = right->attr.type_id;
+    char* relop_dict[6] = {
+        ">",
+        "<",
+        ">=",
+        "<=",
+        "==",
+        "!="
+    };
+    concat3(root->attr.id, left->attr.id, relop_dict[(int)rel->node_value.relop], right->attr.id);
+
+    if (arithmetic(left_type, right_type)) {
+        root->attr.type_id = construct_basic(INT_BASIC);
+        return;
+    } else {
+        print_error(7, left->loc.line, NULL);
+        return;
+    }
+}
+
+void exp_exp_or_exp(Node* root, Node* left, Node* right){
+    int left_type = left->attr.type_id;
+    int right_type = right->attr.type_id;
+    concat3(root->attr.id, left->attr.id, "||", right->attr.id);
+
+    if (logic(left_type, right_type)) {
+        root->attr.type_id = left_type;
+        return;
+    } else {
+        print_error(7, left->loc.line, NULL);
+        return;
+    }
+}
+
+void exp_exp_and_exp(Node* root, Node* left, Node* right){
+    int left_type = left->attr.type_id;
+    int right_type = right->attr.type_id;
+    concat3(root->attr.id, left->attr.id, "&&", right->attr.id);
+
+    if (logic(left_type, right_type)) {
+        root->attr.type_id = left_type;
+        return;
+    } else {
+        print_error(7, left->loc.line, NULL);
+        return;
+    }
 }
 
 void param_spec_var(Node* root, Node* spec, Node* var)

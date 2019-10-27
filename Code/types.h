@@ -7,6 +7,9 @@
 #define valid_type(type) (type >= 0 && type < type_num)
 #define kind(type) (type_set[type].kind)
 #define value(type) (type_set[type].u)
+#define type_eq(left, right) (valid_type(left) && valid_type(right) && eq(left, right))
+#define arithmetic(left, right) (type_eq(left, right) && kind(left) == BASIC)
+#define logic(left, right) (arithmetic(left, right) && value(left).basic == INT_BASIC)
 
 /********** typedef **********/
 typedef struct Type Type;
