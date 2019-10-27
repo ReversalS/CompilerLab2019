@@ -88,11 +88,13 @@ static void deconstructSubTree(struct rb_node* node) {
 }
 
 void destructRBTree(struct rb_root* root) {
-    //note that root cannot be freed (sad)
-    if (root->rb_node->rb_left)
-        deconstructSubTree(root->rb_node->rb_left);
-    if (root->rb_node->rb_right)
-        deconstructSubTree(root->rb_node->rb_right);
+    // //note that root cannot be freed (sad)
+    // if (root->rb_node->rb_left)
+    //     deconstructSubTree(root->rb_node->rb_left);
+    // if (root->rb_node->rb_right)
+    //     deconstructSubTree(root->rb_node->rb_right);
+    if (root->rb_node)
+        deconstructSubTree(root->rb_node);
 }
 
 /* when encounters '{' */
@@ -114,6 +116,7 @@ int popSymbolStack() {
     RB_EMPTY_ROOT(&symbol_stack[stackTop].root);   //actuall {NULL, }
     symbolCount -= symbol_stack[stackTop].nodeCount;
     symbol_stack[stackTop].nodeCount = 0;
+    return 0;
 }
 
 void printSymbolStack() {
