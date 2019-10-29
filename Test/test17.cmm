@@ -1,0 +1,64 @@
+int a, m, n;
+float b;
+
+struct ABC {
+    int x;
+    float b;
+    int a[10][20];
+    int a2[20][1];
+};
+
+// struct ABC {
+// float m[19][2354];
+// };
+
+struct FUNK {
+//    int a = 0;
+    int v;
+//    int v;
+};
+
+// int FUNK;
+
+// int func(int i, float j, struct ABC sjkdfl) {
+//    return 0;
+// }
+
+int func(int i, float j, struct ABC abc) {
+    int a, n, m=233;
+    if (a == 199) {
+        a = n + m;
+        n = abc.a[20][2];
+        // m = abc.a2[2.2];
+        // m = abc.a2[2] - n;
+        // m = abc.fbk;
+    }
+    abc.a = abc.a2;
+    // abc.a2 - a;
+    // m = abc.a2 - a;
+    // n.jskdl;
+    // kmnz();
+    // j.m;
+    // j();
+    return abc.x;
+}
+
+int main() {
+    float c = 3.89;
+    struct FUNK funk, fk2;
+    struct UNDEAD zombie;
+    zombie.k;
+    
+    funk = fk2;
+
+    // funk - c;
+    // funk();
+    // func(2);
+    // 0 = b;
+    // 0.0 + 1.1 = c;
+    a = 100;
+    
+    b = 0.0;
+    // c = a + b;
+    return m;
+}
