@@ -8,8 +8,8 @@ int func1(int x){
     return x + 1;
 }
 
-int func2(){
+int func2(struct A a){
     int y;
     int z;
-    return func1(y, z);
+    return func1(a.x);
 }

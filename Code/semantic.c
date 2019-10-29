@@ -698,6 +698,15 @@ void fun_id_lp_var_rp(Node* root, Node* id, Node* var)
 {
     copy_str(&root->attr.id, id->node_value.id);
     copy_attrlist(&root->attr.para_list, var->attr.para_list);
+    AttrList* p = var->attr.para_list;
+    int ret = -1;
+    while(p != NULL){
+        ret = insertSymbol(p->attr.para.id, 0, p->attr.para.type, p->attr.para.line, 0, 0);
+        if(ret == -1){
+            print_error(3, p->attr.para.line, p->attr.para.id);
+        }
+        p = p->next;
+    }
 }
 
 void fun_id_lp_rp(Node* root, Node* id)
@@ -751,12 +760,7 @@ void extdef_spec_fun_comp(Node* root, Node* spec, Node* fun, Node* comp)
         updateSymbolType(index, ret);
         AttrList* p = fun->attr.para_list;
         while (p != NULL) {
-            temp = insertSymbol(p->attr.para.id, 0, p->attr.para.type, p->attr.para.line, 0, 0);
-            if (temp == -1) {
-                print_error(3, p->attr.para.line, p->attr.para.id);
-            } else {
-                add_member(ret, p->attr.para.id, p->attr.para.type);
-            }
+            add_member(ret, p->attr.para.id, p->attr.para.type);
             p = p->next;
         }
         AttrList* q = comp->attr.para_list;
