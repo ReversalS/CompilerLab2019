@@ -38,6 +38,7 @@ int init_field(AttrList* vardef_list);
 unsigned hash_pjw(char* str);
 int dup_field(AttrList* vardef_list);
 void str_concat(char** dest, char* src[], int num);
+void insert_func(Node* spec, Node* fun);
 Var_Dec* format_vardec(Node* var);
 Var_Def* format_vardef(Node* var, int type_id);
 Para* format_para(Node* var, int type_id);

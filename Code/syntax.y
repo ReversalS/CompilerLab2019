@@ -59,9 +59,12 @@ ExtDef: Specifier ExtDecList SEMI {
         FORM_SUBTREE_2($$,EXTDEF,$1,$2);
         extdef_spec_semi($$, $1);
     }
-    | Specifier FunDec CompSt {
-        FORM_SUBTREE_3($$,EXTDEF,$1,$2,$3);
-        extdef_spec_fun_comp($$, $1, $2, $3);
+    | Specifier FunDec {
+        insert_func($1, $2);
+    }
+    CompSt {
+        FORM_SUBTREE_3($$,EXTDEF,$1,$2,$4);
+        extdef_spec_fun_comp($$, $1, $2, $4);
     }
     | error SEMI {
         $$ = create_EP();

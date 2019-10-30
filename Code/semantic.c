@@ -70,6 +70,31 @@ void str_concat(char** dest, char* src[], int num)
     }
 }
 
+void insert_func(Node* spec, Node* fun)
+{
+    int return_type = spec->attr.type_id;
+    int index = -1;
+    int ret = -1;
+    int temp = -1;
+    if (!valid_type(return_type)) {
+        return;
+    }
+    index = insertSymbol(fun->attr.id, 1, -1, fun->loc.line, fun->loc.column, 0);
+    if (index == -1) {
+        // redefine
+        print_error(4, fun->loc.line, fun->attr.id);
+        return;
+    } else {
+        ret = construct_function(fun->attr.id, return_type);
+        updateSymbolType(index, ret);
+        AttrList* p = fun->attr.para_list;
+        while (p != NULL) {
+            add_member(ret, p->attr.para.id, p->attr.para.type);
+            p = p->next;
+        }
+    }
+}
+
 unsigned hash_pjw(char* str)
 {
     unsigned seed = 131;
@@ -700,9 +725,9 @@ void fun_id_lp_var_rp(Node* root, Node* id, Node* var)
     copy_attrlist(&root->attr.para_list, var->attr.para_list);
     AttrList* p = var->attr.para_list;
     int ret = -1;
-    while(p != NULL){
+    while (p != NULL) {
         ret = insertSymbol(p->attr.para.id, 0, p->attr.para.type, p->attr.para.line, 0, 0);
-        if(ret == -1){
+        if (ret == -1) {
             print_error(3, p->attr.para.line, p->attr.para.id);
         }
         p = p->next;
@@ -743,33 +768,44 @@ void extdef_spec_extdec_semi(Node* root, Node* spec, Node* extdec)
 
 void extdef_spec_fun_comp(Node* root, Node* spec, Node* fun, Node* comp)
 {
+    // int return_type = spec->attr.type_id;
+    // int index = -1;
+    // int ret = -1;
+    // int temp = -1;
+    // if (!valid_type(return_type)) {
+    //     return;
+    // }
+    // index = insertSymbol(fun->attr.id, 1, -1, fun->loc.line, fun->loc.column, 0);
+    // if (index == -1) {
+    //     // redefine
+    //     print_error(4, fun->loc.line, fun->attr.id);
+    //     return;
+    // } else {
+    //     ret = construct_function(fun->attr.id, return_type);
+    //     updateSymbolType(index, ret);
+    //     AttrList* p = fun->attr.para_list;
+    //     while (p != NULL) {
+    //         add_member(ret, p->attr.para.id, p->attr.para.type);
+    //         p = p->next;
+    //     }
+    //     AttrList* q = comp->attr.para_list;
+    //     while (q != NULL) {
+    //         if (!eq(q->attr.para.type, return_type)) {
+    //             print_error(8, q->attr.para.line, NULL);
+    //         }
+    //         q = q->next;
+    //     }
+    // }
     int return_type = spec->attr.type_id;
-    int index = -1;
-    int ret = -1;
-    int temp = -1;
     if (!valid_type(return_type)) {
         return;
     }
-    index = insertSymbol(fun->attr.id, 1, -1, fun->loc.line, fun->loc.column, 0);
-    if (index == -1) {
-        // redefine
-        print_error(4, fun->loc.line, fun->attr.id);
-        return;
-    } else {
-        ret = construct_function(fun->attr.id, return_type);
-        updateSymbolType(index, ret);
-        AttrList* p = fun->attr.para_list;
-        while (p != NULL) {
-            add_member(ret, p->attr.para.id, p->attr.para.type);
-            p = p->next;
+    AttrList* q = comp->attr.para_list;
+    while (q != NULL) {
+        if (!eq(q->attr.para.type, return_type)) {
+            print_error(8, q->attr.para.line, NULL);
         }
-        AttrList* q = comp->attr.para_list;
-        while (q != NULL) {
-            if (!eq(q->attr.para.type, return_type)) {
-                print_error(8, q->attr.para.line, NULL);
-            }
-            q = q->next;
-        }
+        q = q->next;
     }
 }
 
