@@ -2,6 +2,7 @@
 #define IR_H
 
 /********** include and macro **********/
+#include "attrlist.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,17 +23,17 @@ enum AssignType { NORMAL,
     DEREF_LEFT,
     DEREF_RIGHT };
 
-enum BinType { PLUS,
-    MINUS,
-    STAR,
-    DIV };
+enum BinType { PLUS_IC,
+    MINUS_IC,
+    STAR_IC,
+    DIV_IC };
 
-enum RelopType { LT,
-    LE,
-    EQ,
-    NE,
-    GT,
-    GE };
+enum RelopType { LT_IC,
+    LE_IC,
+    EQ_IC,
+    NE_IC,
+    GT_IC,
+    GE_IC };
 
 enum OperandType { VAR,
     TEMP,
@@ -103,7 +104,8 @@ int label_id;
 int temp_id;
 
 /********** function definition **********/
-Operand* create_op(OperandType type, void* val);
+Operand* create_op(OperandType type, char* val);
+Operand* create_const(int val);
 char* op_to_string(Operand* op);
 InterCode* create_ic();
 char* ic_to_string(InterCode* ic);

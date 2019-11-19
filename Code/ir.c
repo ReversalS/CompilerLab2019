@@ -1,16 +1,7 @@
 #include "ir.h"
 
-temp_id = 0;
-label_id = 0;
-
-void copy_str(char** dest, char* src)
-{
-    if (src == NULL) {
-        return;
-    }
-    (*dest) = (char*)malloc(strlen(src) + 1);
-    strcpy((*dest), src);
-}
+int temp_id = 0;
+int label_id = 0;
 
 char* op_to_string(Operand* op)
 {
@@ -30,23 +21,28 @@ char* op_to_string(Operand* op)
     return temp;
 }
 
-Operand* create_op(OperandType type, void* val)
+Operand* create_op(OperandType type, char* val)
 {
     Operand* temp = (Operand*)malloc(sizeof(Operand));
     memset(temp, 0, sizeof(Operand));
     temp->kind = type;
     switch (type) {
     case VAR:
-        copy_str(&temp->u.var_name, (char*)val);
+        copy_str(&temp->u.var_name, val);
         break;
     case TEMP:
         temp->u.temp_id = temp_id;
         temp_id++;
         break;
-    case CONST:
-        temp->u.ival = (long)val;
-        break;
     }
+    return temp;
+}
+
+Operand* create_const(int val){
+    Operand* temp = (Operand*)malloc(sizeof(Operand));
+    memset(temp, 0, sizeof(Operand));
+    temp->kind = CONST;
+    temp->u.ival = val;
     return temp;
 }
 
@@ -66,10 +62,10 @@ char* ic_to_string(InterCode* ic)
     memset(temp, 0, sizeof(char) * CODE_LEN);
     switch (ic->kind) {
     case LABEL_DEF_ST:
-        sprintf("LABEL label%d :", ic->code.label_id);
+        sprintf(temp, "LABEL label%d :", ic->code.label_id);
         break;
     case FUNC_DEF_ST:
-        sprintf("FUNCTION %s :", ic->code.func_name);
+        sprintf(temp, "FUNCTION %s :", ic->code.func_name);
         break;
     case ASSIGN_ST:
         t1 = op_to_string(ic->code.assign.left);
@@ -96,16 +92,16 @@ char* ic_to_string(InterCode* ic)
         t2 = op_to_string(ic->code.bin.op1);
         t3 = op_to_string(ic->code.bin.op2);
         switch (ic->code.bin.kind) {
-        case PLUS:
+        case PLUS_IC:
             sprintf(temp, "%s := %s + %s", t1, t2, t3);
             break;
-        case MINUS:
+        case MINUS_IC:
             sprintf(temp, "%s := %s - %s", t1, t2, t3);
             break;
-        case STAR:
+        case STAR_IC:
             sprintf(temp, "%s := %s * %s", t1, t2, t3);
             break;
-        case DIV:
+        case DIV_IC:
             sprintf(temp, "%s := %s / %s", t1, t2, t3);
             break;
         }
@@ -120,22 +116,22 @@ char* ic_to_string(InterCode* ic)
         t1 = op_to_string(ic->code.if_statement.op1);
         t2 = op_to_string(ic->code.if_statement.op2);
         switch (ic->code.if_statement.relop) {
-        case GT:
+        case GT_IC:
             sprintf(temp, "IF %s > %s GOTO label%d", t1, t2, ic->code.if_statement.goto_id);
             break;
-        case LT:
+        case LT_IC:
             sprintf(temp, "IF %s < %s GOTO label%d", t1, t2, ic->code.if_statement.goto_id);
             break;
-        case GE:
+        case GE_IC:
             sprintf(temp, "IF %s >= %s GOTO label%d", t1, t2, ic->code.if_statement.goto_id);
             break;
-        case LE:
+        case LE_IC:
             sprintf(temp, "IF %s <= %s GOTO label%d", t1, t2, ic->code.if_statement.goto_id);
             break;
-        case EQ:
+        case EQ_IC:
             sprintf(temp, "IF %s == %s GOTO label%d", t1, t2, ic->code.if_statement.goto_id);
             break;
-        case NE:
+        case NE_IC:
             sprintf(temp, "IF %s != %s GOTO label%d", t1, t2, ic->code.if_statement.goto_id);
             break;
         }
@@ -302,7 +298,6 @@ void deconstruct_op(Operand* op)
     case VAR:
         free(op->u.var_name);
         break;
-    default:
     }
     free(op);
 }

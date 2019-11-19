@@ -4,6 +4,7 @@
 /********** include and macro **********/
 #include "attrlist.h"
 #include "enums.h"
+#include "ic_list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,6 +22,20 @@ struct Node {
     struct Location loc; //出现位置
     int child_num; // 子节点数量
     struct Node** children; // 子节点数组
+    union {
+        enum { EXP_ASSIGN,
+            EXP_LOGIC,
+            EXP_ARITH,
+            EXP_LP,
+            EXP_MINUS,
+            EXP_FUNC,
+            EXP_ARRAY,
+            EXP_STRUCT,
+            EXP_BASIC } exp;
+    } body;
+    Code code;
+
+
 
     // semantic attrs
     struct {

@@ -2,6 +2,7 @@
     /* ... */
     #include "lex.yy.c"
     #include "semantic.h"
+    #include "translate.h"
 
     int yyerror(const char*);
     int yylex(void);
@@ -215,6 +216,8 @@ StmtList: Stmt StmtList {
 Stmt: Exp SEMI {
         FORM_SUBTREE_2($$,STMT,$1,$2)
         stmt_exp_semi($$, $1);
+        translate_Exp($1, NULL);
+        print_code(stdout, &$1->code);
     }
     | CompSt {
         FORM_SUBTREE_1($$,STMT,$1)
@@ -301,38 +304,47 @@ Dec: VarDec {
 /* Expressions */
 Exp: Exp ASSIGNOP Exp{
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_ASSIGN;
         exp_exp_assignop_exp($$, $1, $3);
     }
     | Exp AND Exp {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_LOGIC;
         exp_exp_and_exp($$, $1, $3);
     }
     | Exp OR Exp {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_LOGIC;
         exp_exp_or_exp($$, $1, $3);
     }
     | Exp RELOP Exp {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_LOGIC;
         exp_exp_relop_exp($$, $1, $2, $3);
     }
     | Exp PLUS Exp {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_ARITH;
         exp_exp_plus_exp($$, $1, $3);
     }
     | Exp MINUS Exp {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_ARITH;
         exp_exp_minus_exp($$, $1, $3);
     }
     | Exp STAR Exp {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_ARITH;
         exp_exp_star_exp($$, $1, $3);
     }
     | Exp DIV Exp {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_ARITH;
         exp_exp_div_exp($$, $1, $3);
     }
     | LP Exp RP {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_LP;
         exp_lp_exp_rp($$, $2);
     }
     | LP error RP {
@@ -340,14 +352,17 @@ Exp: Exp ASSIGNOP Exp{
     }
     | MINUS Exp {
         FORM_SUBTREE_2($$,EXP,$1,$2)
+        $$->body.exp = EXP_MINUS;
         exp_minus_exp($$, $2);
     }
     | NOT Exp {
         FORM_SUBTREE_2($$,EXP,$1,$2)
+        $$->body.exp = EXP_LOGIC;
         exp_not_exp($$, $2);
     }
     | ID LP Args RP {
         FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4)
+        $$->body.exp = EXP_FUNC;
         exp_id_lp_args_rp($$, $1, $3);
         // AttrList* p = $3->attr.para_list;
         // while(p != NULL){
@@ -358,6 +373,7 @@ Exp: Exp ASSIGNOP Exp{
     }
     | ID LP RP  {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_FUNC;
         exp_id_lp_rp($$, $1);
     }
     | ID LP error RP {
@@ -365,6 +381,7 @@ Exp: Exp ASSIGNOP Exp{
     }
     | Exp LB Exp RB {
         FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4)
+        $$->body.exp = EXP_ARRAY;
         exp_exp_lb_exp_rb($$, $1, $3);
     }
     | Exp LB error RB {
@@ -372,18 +389,22 @@ Exp: Exp ASSIGNOP Exp{
     }
     | Exp DOT ID {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)
+        $$->body.exp = EXP_STRUCT;
         exp_exp_dot_id($$, $1, $3);
     }
     | ID {
         FORM_SUBTREE_1($$,EXP,$1)
+        $$->body.exp = EXP_BASIC;
         exp_id($$, $1);
     }
     | INT {
         FORM_SUBTREE_1($$,EXP,$1)
+        $$->body.exp = EXP_BASIC;
         exp_int($$, $1);
     }
     | FLOAT {
         FORM_SUBTREE_1($$,EXP,$1)
+        $$->body.exp = EXP_BASIC;
         exp_float($$, $1);
     }
     ;
