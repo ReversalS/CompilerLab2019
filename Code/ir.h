@@ -53,40 +53,16 @@ struct InterCode {
         PARAM_ST,
         READ_ST,
         WRITE_ST } kind;
+    Operand* op1;
+    Operand* op2;
+    Operand* result;
     union {
         int label_id;
         char* func_name;
-        struct {
-            Operand* left;
-            Operand* right;
-            AssignType kind;
-        } assign;
-        struct {
-            Operand* result;
-            Operand* op1;
-            Operand* op2;
-            BinType kind;
-        } bin;
-        int goto_id;
-        struct {
-            Operand* op1;
-            Operand* op2;
-            RelopType relop;
-            int goto_id;
-        } if_statement;
-        Operand* return_val;
-        struct {
-            Operand* op;
-            int size;
-        } dec_statement;
-        Operand* arg;
-        struct {
-            Operand* return_val;
-            char* func_name;
-        } call_func_statement;
-        Operand* param;
-        Operand* read;
-        Operand* write;
+        int dec_size;
+        AssignType assign_kind;
+        BinType bin_kind;
+        RelopType relop;
     } code;
 };
 

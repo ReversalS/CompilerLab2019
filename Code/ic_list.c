@@ -44,9 +44,33 @@ void insert_ic(Code* result, Code* code, ListNode* node)
     }
 }
 
+void remove_ic(Code* code, ListNode* node){
+    if(code->end == node){
+        code->end = node->prev;
+    }
+    if(code->start == node){
+        code->start = node->next;
+    }
+    if(node->next != NULL && node->prev != NULL){
+        node->next->prev = node->prev;
+        node->prev->next = node->next;
+    } else if(node->next == NULL && node->prev != NULL){
+        node->prev->next = node->next;
+    } else if(node->next != NULL && node->prev == NULL){
+        node->next->prev = node->prev;
+    } else {
+        code->start = code->end = NULL;
+    }
+    deconstruct_ic(node->ic);
+    free(node);
+}
+
+
 void deconstruct_code(Code* code)
 {
     ListNode* p = code->start;
+    ListNode* prev = code->start->prev;
+    ListNode* next = code->end->next;
     while (p != code->end) {
         p = code->start;
         code->start = code->start->next;
@@ -56,6 +80,12 @@ void deconstruct_code(Code* code)
     deconstruct_ic(p->ic);
     free(p);
     code->start = code->end = NULL;
+    if(prev != NULL){
+        prev->next = next;
+    }
+    if(next != NULL){
+        next->prev = prev;
+    }
 }
 
 void print_code(FILE* fp, Code* code)
