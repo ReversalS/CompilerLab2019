@@ -65,6 +65,7 @@ struct InterCode {
         AssignType assign_kind;
         BinType bin_kind;
         RelopType relop;
+        int is_array;
         struct {
             int label_id;
             RelopType relop;
@@ -114,7 +115,7 @@ InterCode* create_goto(int label);
 InterCode* create_if(RelopType type, Operand* op1, Operand* op2, int label);
 InterCode* create_return(Operand* return_val);
 InterCode* create_dec(Operand* op, int size);
-InterCode* create_arg(Operand* arg);
+InterCode* create_arg(Operand* arg, int is_array);
 InterCode* create_call_func(Operand* return_val, char* func_name);
 InterCode* create_param(Operand* param);
 InterCode* create_read(Operand* read);

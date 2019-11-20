@@ -43,6 +43,8 @@ Program: ExtDefList {
         FORM_SUBTREE_1($$,PROGRAM,$1);
         global_root = $$;
         program_extdef($$, $1);
+        translate_Program($$);
+        print_code(stdout, &$$->code);
     };
 ExtDefList: ExtDef ExtDefList {
         FORM_SUBTREE_2($$,EXTDEFLIST,$1,$2)
@@ -62,10 +64,14 @@ ExtDef: Specifier ExtDecList SEMI {
     }
     | Specifier FunDec {
         insert_func($1, $2);
+        // translate_FunDec($2);
+        // print_code(stdout, &$2->code);
     }
     CompSt {
         FORM_SUBTREE_3($$,EXTDEF,$1,$2,$4);
         extdef_spec_fun_comp($$, $1, $2, $4);
+        // translate_ExtDef_func($$);
+        // print_code(stdout, &$$->code);
     }
     | error SEMI {
         $$ = create_EP();
@@ -217,8 +223,8 @@ Stmt: Exp SEMI {
         FORM_SUBTREE_2($$,STMT,$1,$2)
         $$->body.stmt = STMT_EXP;
         stmt_exp_semi($$, $1);
-        translate_Exp($1, NULL);
-        print_code(stdout, &$1->code);
+        // translate_Exp($1, NULL);
+        // print_code(stdout, &$1->code);
         // printf("=================\n");
         // for(int i = 0; i < temp_id; i++){
         //     printf("temp_id: %d, state: %d\n", i, temp_state[i].state);
@@ -245,6 +251,8 @@ Stmt: Exp SEMI {
         FORM_SUBTREE_7($$,STMT,$1,$2,$3,$4,$5,$6,$7)
         $$->body.stmt = STMT_IFEL;
         stmt_if_lp_exp_rp_stmt_else_stmt($$, $3, $5, $7);
+        // translate_Stmt($$);
+        // print_code(stdout, &$$->code);
     }
     | WHILE LP Exp RP Stmt {
         FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5)

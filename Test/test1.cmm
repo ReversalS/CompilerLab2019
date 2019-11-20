@@ -1,8 +1,15 @@
-int func(int a, int b, int c){
-    return a + b + c;
+int factorial(int a){
+    if(a <= 0){
+        return 1;
+    } else {
+        return a * factorial(a - 1);
+    }
 }
-
 int main(){
-    int x, y, z;
-    x = func(x, y, x + y + z);
+    int x;
+    int y;
+    x = read();
+    y = factorial(x);
+    write(y);
+    return 0;
 }

@@ -10,8 +10,15 @@ ListNode* create_list_node(InterCode* ic)
 
 void concatenate_code(Code* result, Code* c1, Code* c2)
 {
-    if (c1->end == NULL || c2->start == NULL) {
+    if (is_null(c1) && is_null(c2)) {
+        result->start = result->end = NULL;
         return;
+    } else if (is_null(c1) && !is_null(c2)){
+        *result = *c2;
+        return ;
+    } else if (!is_null(c1) && is_null(c2)){
+        *result = *c1;
+        return ;
     } else {
         c1->end->next = c2->start;
         c2->start->prev = c1->end;
@@ -22,7 +29,8 @@ void concatenate_code(Code* result, Code* c1, Code* c2)
 
 void append_ic(Code* result, Code* code, ListNode* node)
 {
-    if (code->end == NULL) {
+    if (is_null(code)) {
+        result->start = result->end = node;
         return;
     } else {
         code->end->next = node;
@@ -34,7 +42,8 @@ void append_ic(Code* result, Code* code, ListNode* node)
 
 void insert_ic(Code* result, Code* code, ListNode* node)
 {
-    if (code->start == NULL) {
+    if (is_null(code)) {
+        result->start = result->end = node;
         return;
     } else {
         node->next = code->start;
@@ -90,6 +99,9 @@ void deconstruct_code(Code* code)
 
 void print_code(FILE* fp, Code* code)
 {
+    if(is_null(code)){
+        return ;
+    }
     char* temp;
     ListNode* p = code->start;
     while (p != code->end) {

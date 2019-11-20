@@ -179,24 +179,30 @@ void translate_Exp_minus(Node* root, Operand* op)
 
 void translate_Exp_func(Node* root, Operand* op)
 {
-    if(root->child_num == 3){
-        if(strcmp(root->children[0]->node_value.id, "read") == 0){
+    if (root->child_num == 3) {
+        if (strcmp(root->children[0]->node_value.id, "read") == 0) {
             root->code.start = root->code.end = create_list_node(create_read(op));
         } else {
             root->code.start = root->code.end = create_list_node(create_call_func(op, root->children[0]->node_value.id));
         }
     } else {
         translate_Args(root->children[2]);
-        if(strcmp(root->children[0]->node_value.id, "write") == 0){
+        if (strcmp(root->children[0]->node_value.id, "write") == 0) {
             append_ic(&root->code, &root->children[2]->code, create_list_node(create_write((Operand*)root->children[2]->attr.opt_array->attr.array_size)));
         } else {
             AttrList* p = root->children[2]->attr.opt_array;
-            root->code = root->children[2]->code;
-            while(p != NULL){
-                append_ic(&root->code, &root->code, create_list_node(create_arg((Operand*)p->attr.array_size)));
+            AttrList* q = root->children[2]->attr.para_list;
+            root->code.start = root->code.end = create_list_node(create_call_func(op, root->children[0]->node_value.id));
+            while (p != NULL) {
+                if (kind(q->attr.para.type) == ARRAY) {
+                    insert_ic(&root->code, &root->code, create_list_node(create_arg((Operand*)p->attr.array_size, 1)));
+                } else {
+                    insert_ic(&root->code, &root->code, create_list_node(create_arg((Operand*)p->attr.array_size, 0)));
+                }
                 p = p->next;
+                q = q->next;
             }
-            append_ic(&root->code, &root->code, create_list_node(create_call_func(op, root->children[0]->node_value.id)));
+            concatenate_code(&root->code, &root->children[2]->code, &root->code);
         }
     }
 }
@@ -249,8 +255,9 @@ void translate_Exp_basic(Node* root, Operand* op)
     }
 }
 
-void translate_Args(Node* root){
-    if(root->child_num == 1){
+void translate_Args(Node* root)
+{
+    if (root->child_num == 1) {
         Operand* temp = create_op(TEMP, NULL);
         translate_Exp(root->children[0], temp);
         root->code = root->children[0]->code;
@@ -260,7 +267,7 @@ void translate_Args(Node* root){
         translate_Exp(root->children[0], temp);
         translate_Args(root->children[2]);
         copy_attrlist(&root->attr.opt_array, root->children[2]->attr.opt_array);
-        append(&root->attr.opt_array, ARRAY_SIZE, (void*)temp);
+        insert(&root->attr.opt_array, ARRAY_SIZE, (void*)temp);
         concatenate_code(&root->code, &root->children[0]->code, &root->children[2]->code);
     }
 }
@@ -274,7 +281,8 @@ void translate_Stmt(Node* root)
         root->code = root->children[0]->code;
         break;
     case STMT_COMP:
-        // TODO
+        translate_Stmt_comp(root->children[0]);
+        root->code = root->children[0]->code;
         break;
     case STMT_RT:
         ret = create_op(TEMP, NULL);
@@ -293,7 +301,15 @@ void translate_Stmt(Node* root)
     }
 }
 
-void translate_Stmt_if(Node* root){
+void translate_Stmt_comp(Node* root)
+{
+    translate_DefList(root->children[1]);
+    translate_StmtList(root->children[2]);
+    concatenate_code(&root->code, &root->children[1]->code, &root->children[2]->code);
+}
+
+void translate_Stmt_if(Node* root)
+{
     InterCode* label_true = create_label();
     InterCode* label_false = create_label();
     translate_Cond(root->children[2], label_true, label_false);
@@ -303,7 +319,8 @@ void translate_Stmt_if(Node* root){
     append_ic(&root->code, &root->code, create_list_node(label_false));
 }
 
-void translate_Stmt_ifel(Node* root){
+void translate_Stmt_ifel(Node* root)
+{
     InterCode* l1 = create_label();
     InterCode* l2 = create_label();
     InterCode* l3 = create_label();
@@ -315,10 +332,11 @@ void translate_Stmt_ifel(Node* root){
     append_ic(&root->children[6]->code, &root->children[6]->code, create_list_node(l3));
     concatenate_code(&root->code, &root->children[2]->code, &root->children[4]->code);
     append_ic(&root->code, &root->code, create_list_node(l2));
-    concatenate_code(&root->code, &root->code,&root->children[6]->code);
+    concatenate_code(&root->code, &root->code, &root->children[6]->code);
 }
 
-void translate_Stmt_while(Node* root){
+void translate_Stmt_while(Node* root)
+{
     InterCode* l1 = create_label();
     InterCode* l2 = create_label();
     InterCode* l3 = create_label();
@@ -326,7 +344,7 @@ void translate_Stmt_while(Node* root){
     translate_Stmt(root->children[4]);
     insert_ic(&root->children[2]->code, &root->children[2]->code, create_list_node(l1));
     insert_ic(&root->children[4]->code, &root->children[4]->code, create_list_node(l2));
-    concatenate_code(&root->code,&root->children[2]->code, &root->children[4]->code);
+    concatenate_code(&root->code, &root->children[2]->code, &root->children[4]->code);
     append_ic(&root->code, &root->code, create_list_node(create_goto(l1->code.label_id)));
     append_ic(&root->code, &root->code, create_list_node(l3));
 }
@@ -361,5 +379,123 @@ void translate_Cond(Node* exp, InterCode* label_true, InterCode* label_false)
         translate_Exp(exp, temp);
         append_ic(&exp->code, &exp->code, create_list_node(create_if(NE_IC, temp, create_const(0), label_true->code.label_id)));
         append_ic(&exp->code, &exp->code, create_list_node(create_goto(label_false->code.label_id)));
+    }
+}
+
+void translate_Program(Node* root)
+{
+    translate_ExtDefList(root->children[0]);
+    root->code = root->children[0]->code;
+}
+
+void translate_ExtDefList(Node* root)
+{
+    if (root->symbol_type != EPSILON) {
+        if (root->children[1]->symbol_type != EPSILON) {
+            translate_ExtDef(root->children[0]);
+            translate_ExtDefList(root->children[1]);
+            concatenate_code(&root->code, &root->children[0]->code, &root->children[1]->code);
+        } else {
+            translate_ExtDef(root->children[0]);
+            root->code = root->children[0]->code;
+        }
+    }
+}
+
+void translate_ExtDef(Node* root)
+{
+    if (root->child_num == 3 && root->children[1]->node_type.nt_type == FUNDEC) {
+        translate_ExtDef_func(root);
+    } else {
+        // nothing
+    }
+}
+
+void translate_ExtDef_func(Node* root)
+{
+    translate_FunDec(root->children[1]);
+    translate_Stmt_comp(root->children[2]);
+    concatenate_code(&root->code, &root->children[1]->code, &root->children[2]->code);
+}
+
+void translate_FunDec(Node* root)
+{
+    root->code.start = root->code.end = create_list_node(create_func_def(root->children[0]->node_value.id));
+    if (root->child_num == 4) {
+        AttrList* p = root->children[2]->attr.para_list;
+        while (p != NULL) {
+            append_ic(&root->code, &root->code, create_list_node(create_param(create_op(VAR, p->attr.para.id))));
+            p = p->next;
+        }
+    }
+}
+
+void translate_StmtList(Node* root)
+{
+    if (root->symbol_type != EPSILON) {
+        if (root->children[1]->symbol_type != EPSILON) {
+            translate_Stmt(root->children[0]);
+            translate_StmtList(root->children[1]);
+            concatenate_code(&root->code, &root->children[0]->code, &root->children[1]->code);
+        } else {
+            translate_Stmt(root->children[0]);
+            root->code = root->children[0]->code;
+        }
+    }
+}
+
+void translate_DefList(Node* root)
+{
+    if (root->symbol_type != EPSILON) {
+        if (root->children[1]->symbol_type != EPSILON) {
+            translate_Def(root->children[0]);
+            translate_DefList(root->children[1]);
+            concatenate_code(&root->code, &root->children[0]->code, &root->children[1]->code);
+        } else {
+            translate_Def(root->children[0]);
+            root->code = root->children[0]->code;
+        }
+    }
+}
+
+void translate_Def(Node* root)
+{
+    translate_DecList(root->children[1]);
+    root->code = root->children[1]->code;
+}
+
+void translate_DecList(Node* root)
+{
+    if (root->child_num == 3) {
+        translate_Dec(root->children[0]);
+        translate_DecList(root->children[2]);
+        concatenate_code(&root->code, &root->children[0]->code, &root->children[2]->code);
+    } else {
+        translate_Dec(root->children[0]);
+        root->code = root->children[0]->code;
+    }
+}
+
+void translate_Dec(Node* root)
+{
+    if (root->child_num == 3) {
+        Operand* temp = create_op(TEMP, NULL);
+        Operand* var = create_op(VAR, root->children[0]->attr.id);
+        translate_Exp(root->children[2], temp);
+        if (root->children[2]->body.exp == EXP_ARRAY) {
+            append_ic(&root->code, &root->children[2]->code, create_list_node(create_assign(DEREF_RIGHT, var, temp)));
+        } else {
+            append_ic(&root->code, &root->children[2]->code, create_list_node(create_assign(NORMAL, var, temp)));
+        }
+    } else {
+        if(root->children[0]->child_num > 1){
+            AttrList* p = root->children[0]->attr.opt_array;
+            int size = 4;
+            while(p != NULL){
+                size *= p->attr.array_size;
+                p = p->next;
+            }
+            root->code.start = root->code.end = create_list_node(create_dec(create_op(VAR, root->children[0]->attr.id), size));
+        }
     }
 }

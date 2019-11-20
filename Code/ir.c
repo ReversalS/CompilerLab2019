@@ -161,7 +161,11 @@ char* ic_to_string(InterCode* ic)
         break;
     case ARG_ST:
         t1 = op_to_string(ic->op1);
-        sprintf(temp, "ARG %s", t1);
+        if(ic->code.is_array){
+            sprintf(temp, "ARG &%s", t1);
+        } else {
+            sprintf(temp, "ARG %s", t1);
+        }
         free(t1);
         break;
     case CALL_FUNC_ST:
@@ -285,9 +289,10 @@ InterCode* create_dec(Operand* op, int size)
     return temp;
 }
 
-InterCode* create_arg(Operand* arg)
+InterCode* create_arg(Operand* arg, int is_array)
 {
     InterCode* temp = create_ic();
+    temp->code.is_array = is_array;
     temp->kind = ARG_ST;
     temp->op1 = arg;
     return temp;

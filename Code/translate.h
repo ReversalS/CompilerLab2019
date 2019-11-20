@@ -25,13 +25,32 @@ void translate_Exp_basic(Node* root, Operand* op);
 void translate_Args(Node* root);
 
 void translate_Stmt(Node* root);
+void translate_Stmt_comp(Node* root);
 void translate_Stmt_if(Node* root);
 void translate_Stmt_ifel(Node* root);
 void translate_Stmt_while(Node* root);
 
-
 void translate_Cond(Node* exp, InterCode* label_true, InterCode* label_false);
 
+void translate_Program(Node* root);
+
+void translate_ExtDefList(Node* root);
+
+void translate_ExtDef(Node* root);
+
+void translate_ExtDef_func(Node* root);
+
+void translate_FunDec(Node* root);
+
+void translate_StmtList(Node* root);
+
+void translate_DefList(Node* root);
+
+void translate_Def(Node* root);
+
+void translate_DecList(Node* root);
+
+void translate_Dec(Node* root);
 
 
 

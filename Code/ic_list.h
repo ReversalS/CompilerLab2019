@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define is_null(code) (code->start == NULL && code->end == NULL)
 
 /********** typedef **********/
 typedef struct ListNode ListNode;
