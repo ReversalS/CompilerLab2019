@@ -3,6 +3,15 @@
 int temp_id = 0;
 int label_id = 0;
 
+void init_temp_state()
+{
+    for (int i = 0; i < MAX_TEMP_NUM; i++) {
+        temp_state[i].state = NONACTIVE;
+        temp_state[i].u.imm_val = 0;
+        temp_state[i].u.var_name = NULL;
+    }
+}
+
 char* op_to_string(Operand* op)
 {
     char* temp = (char*)malloc(sizeof(char) * OPERAND_LEN);
@@ -32,13 +41,15 @@ Operand* create_op(OperandType type, char* val)
         break;
     case TEMP:
         temp->u.temp_id = temp_id;
+        temp_state[temp_id].state = ACTIVE;
         temp_id++;
         break;
     }
     return temp;
 }
 
-Operand* create_const(int val){
+Operand* create_const(int val)
+{
     Operand* temp = (Operand*)malloc(sizeof(Operand));
     memset(temp, 0, sizeof(Operand));
     temp->kind = CONST;
@@ -115,24 +126,24 @@ char* ic_to_string(InterCode* ic)
     case IF_ST:
         t1 = op_to_string(ic->op1);
         t2 = op_to_string(ic->op2);
-        switch (ic->code.relop) {
+        switch (ic->code.if_stmt.relop) {
         case GT_IC:
-            sprintf(temp, "IF %s > %s GOTO label%d", t1, t2, ic->code.label_id);
+            sprintf(temp, "IF %s > %s GOTO label%d", t1, t2, ic->code.if_stmt.label_id);
             break;
         case LT_IC:
-            sprintf(temp, "IF %s < %s GOTO label%d", t1, t2, ic->code.label_id);
+            sprintf(temp, "IF %s < %s GOTO label%d", t1, t2, ic->code.if_stmt.label_id);
             break;
         case GE_IC:
-            sprintf(temp, "IF %s >= %s GOTO label%d", t1, t2, ic->code.label_id);
+            sprintf(temp, "IF %s >= %s GOTO label%d", t1, t2, ic->code.if_stmt.label_id);
             break;
         case LE_IC:
-            sprintf(temp, "IF %s <= %s GOTO label%d", t1, t2, ic->code.label_id);
+            sprintf(temp, "IF %s <= %s GOTO label%d", t1, t2, ic->code.if_stmt.label_id);
             break;
         case EQ_IC:
-            sprintf(temp, "IF %s == %s GOTO label%d", t1, t2, ic->code.label_id);
+            sprintf(temp, "IF %s == %s GOTO label%d", t1, t2, ic->code.if_stmt.label_id);
             break;
         case NE_IC:
-            sprintf(temp, "IF %s != %s GOTO label%d", t1, t2, ic->code.label_id);
+            sprintf(temp, "IF %s != %s GOTO label%d", t1, t2, ic->code.if_stmt.label_id);
             break;
         }
         free(t1);
@@ -201,6 +212,22 @@ InterCode* create_assign(AssignType type, Operand* left, Operand* right)
     temp->code.assign_kind = type;
     temp->op1 = left;
     temp->op2 = right;
+    // test
+    if(left->kind == TEMP){
+        if(temp_state[left->u.temp_id].state == ACTIVE){
+            if(type == NORMAL && right->kind == VAR){
+                temp_state[left->u.temp_id].state = ASSIGNED_VAR;
+                copy_str(&temp_state[left->u.temp_id].u.var_name, right->u.var_name);
+            } else if(type == NORMAL && right->kind == CONST){
+                temp_state[left->u.temp_id].state = ASSIGNED_CONST;
+                temp_state[left->u.temp_id].u.imm_val = right->u.ival;
+            } else {
+                temp_state[left->u.temp_id].state = ASSIGNED;
+            }
+        } else {
+            temp_state[left->u.temp_id].state = MULTI_ASSIGNED;
+        }
+    }
     return temp;
 }
 
@@ -212,6 +239,13 @@ InterCode* create_bin(BinType type, Operand* result, Operand* op1, Operand* op2)
     temp->result = result;
     temp->op1 = op1;
     temp->op2 = op2;
+    if(result->kind == TEMP){
+        if(temp_state[result->u.temp_id].state == ACTIVE){
+            temp_state[result->u.temp_id].state = ASSIGNED;
+        } else {
+            temp_state[result->u.temp_id].state = MULTI_ASSIGNED;
+        }
+    }
     return temp;
 }
 
@@ -227,10 +261,10 @@ InterCode* create_if(RelopType type, Operand* op1, Operand* op2, int label)
 {
     InterCode* temp = create_ic();
     temp->kind = IF_ST;
-    temp->code.label_id = label;
+    temp->code.if_stmt.label_id = label;
     temp->op1 = op1;
     temp->op2 = op2;
-    temp->code.relop = type;
+    temp->code.if_stmt.relop = type;
     return temp;
 }
 
@@ -294,20 +328,23 @@ InterCode* create_write(Operand* write)
 
 void deconstruct_op(Operand* op)
 {
-    if(op == NULL){
-        return ;
+    if (op == NULL) {
+        return;
     }
     switch (op->kind) {
     case VAR:
         free(op->u.var_name);
+        break;
+    case TEMP:
+        temp_state[op->u.temp_id].state = NONACTIVE;
         break;
     }
     free(op);
 }
 void deconstruct_ic(InterCode* ic)
 {
-    if(ic == NULL){
-        return ;
+    if (ic == NULL) {
+        return;
     }
     switch (ic->kind) {
     case FUNC_DEF_ST:

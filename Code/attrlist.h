@@ -46,7 +46,7 @@ struct AttrList {
     ATTR_TYPE kind;
     union {
         // vardec
-        int array_size;
+        long array_size;
         // format vardec
         Var_Dec var_dec;
         // vardec with type

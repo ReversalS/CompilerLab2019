@@ -1,5 +1,8 @@
+int func(int a, int b, int c){
+    return a + b + c;
+}
+
 int main(){
-    int a[7][8][9];
-    int b;
-    b = a[3][4][5];
+    int x, y, z;
+    x = func(x, y, x + y + z);
 }

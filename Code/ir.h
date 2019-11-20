@@ -8,6 +8,7 @@
 #include <string.h>
 #define OPERAND_LEN 32
 #define CODE_LEN 128
+#define MAX_TEMP_NUM 2048
 
 /********** typedef **********/
 typedef struct InterCode InterCode;
@@ -16,6 +17,7 @@ typedef enum AssignType AssignType;
 typedef enum BinType BinType;
 typedef enum RelopType RelopType;
 typedef enum OperandType OperandType;
+typedef struct TempState TempState;
 
 /********** structure definition **********/
 enum AssignType { NORMAL,
@@ -37,7 +39,7 @@ enum RelopType { LT_IC,
 
 enum OperandType { VAR,
     TEMP,
-    CONST};
+    CONST };
 
 struct InterCode {
     enum { LABEL_DEF_ST,
@@ -63,7 +65,24 @@ struct InterCode {
         AssignType assign_kind;
         BinType bin_kind;
         RelopType relop;
+        struct {
+            int label_id;
+            RelopType relop;
+        } if_stmt;
     } code;
+};
+
+struct TempState {
+    enum { NONACTIVE,
+        ACTIVE,
+        ASSIGNED,
+        ASSIGNED_VAR,
+        ASSIGNED_CONST,
+        MULTI_ASSIGNED } state;
+    union {
+        char* var_name;
+        int imm_val;
+    } u;
 };
 
 struct Operand {
@@ -78,8 +97,10 @@ struct Operand {
 /********** global variable **********/
 int label_id;
 int temp_id;
+TempState temp_state[MAX_TEMP_NUM];
 
 /********** function definition **********/
+void init_temp_state();
 Operand* create_op(OperandType type, char* val);
 Operand* create_const(int val);
 char* op_to_string(Operand* op);

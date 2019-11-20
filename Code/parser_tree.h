@@ -32,10 +32,14 @@ struct Node {
             EXP_ARRAY,
             EXP_STRUCT,
             EXP_BASIC } exp;
+        enum { STMT_EXP,
+            STMT_COMP,
+            STMT_RT,
+            STMT_IF,
+            STMT_IFEL,
+            STMT_WHILE } stmt;
     } body;
     Code code;
-
-
 
     // semantic attrs
     struct {

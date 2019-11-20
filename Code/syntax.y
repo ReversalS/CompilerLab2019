@@ -215,28 +215,42 @@ StmtList: Stmt StmtList {
     ;
 Stmt: Exp SEMI {
         FORM_SUBTREE_2($$,STMT,$1,$2)
+        $$->body.stmt = STMT_EXP;
         stmt_exp_semi($$, $1);
         translate_Exp($1, NULL);
         print_code(stdout, &$1->code);
+        // printf("=================\n");
+        // for(int i = 0; i < temp_id; i++){
+        //     printf("temp_id: %d, state: %d\n", i, temp_state[i].state);
+        // }
     }
     | CompSt {
         FORM_SUBTREE_1($$,STMT,$1)
+        $$->body.stmt = STMT_COMP;
         stmt_compst($$, $1);
     }
     | RETURN Exp SEMI {
         FORM_SUBTREE_3($$,STMT,$1,$2,$3)
+        $$->body.stmt = STMT_RT;
         stmt_return_exp_semi($$, $2);
     }
     | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {
         FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5)
+        $$->body.stmt = STMT_IF;
+        // translate_Stmt($$);
+        // print_code(stdout, &$$->code);
         stmt_if_lp_exp_rp_stmt($$, $3, $5);
     }
     | IF LP Exp RP Stmt ELSE Stmt {
         FORM_SUBTREE_7($$,STMT,$1,$2,$3,$4,$5,$6,$7)
+        $$->body.stmt = STMT_IFEL;
         stmt_if_lp_exp_rp_stmt_else_stmt($$, $3, $5, $7);
     }
     | WHILE LP Exp RP Stmt {
         FORM_SUBTREE_5($$,STMT,$1,$2,$3,$4,$5)
+        $$->body.stmt = STMT_WHILE;
+        // translate_Stmt($$);
+        // print_code(stdout, &$$->code);
         stmt_while_lp_exp_rp_stmt($$, $3, $5);
     }
     | error SEMI {
@@ -364,6 +378,8 @@ Exp: Exp ASSIGNOP Exp{
         FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4)
         $$->body.exp = EXP_FUNC;
         exp_id_lp_args_rp($$, $1, $3);
+        // translate_Args($3);
+        // print_code(stdout, &$3->code);
         // AttrList* p = $3->attr.para_list;
         // while(p != NULL){
         //     printf("%s ", p->attr.para.id);

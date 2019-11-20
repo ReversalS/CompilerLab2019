@@ -61,7 +61,9 @@ void remove_imm_assign(Code* code)
                 }
                 break;
             case REPLACE_TEMP:
+                break;
             case SIMPLIFY_BIN:
+                break;
             }
         }
     } while (state != FINISH);
