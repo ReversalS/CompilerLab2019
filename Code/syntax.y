@@ -2,7 +2,7 @@
     /* ... */
     #include "lex.yy.c"
     #include "semantic.h"
-    #include "trans_exp.h"
+    #include "trans_program.h"
 
     int yyerror(const char*);
     int yylex(void);
@@ -223,8 +223,8 @@ Stmt: Exp SEMI {
         FORM_SUBTREE_2($$,STMT,$1,$2)
         $$->body.stmt = STMT_EXP;
         stmt_exp_semi($$, $1);
-        translate_Exp($1, 0);
-        print_code(stdout, &$1->code);
+        // translate_Exp($1, 0);
+        // print_code(stdout, &$1->code);
         // printf("=================\n");
         // for(int i = 0; i < temp_id; i++){
         //     printf("temp_id: %d, state: %d\n", i, temp_state[i].state);

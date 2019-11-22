@@ -55,6 +55,7 @@ void translate_Stmt_if(Node* root)
     case 1:
         deconstruct_ic(label_true);
         deconstruct_ic(label_false);
+        translate_Stmt(root->children[4]);
         root->code = root->children[4]->code;
         break;
     case -1:

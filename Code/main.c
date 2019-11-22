@@ -1,5 +1,7 @@
 #include "semantic.h"
+#include "trans_program.h"
 // #include <stdio.h>
+#define RELEASE
 
 int yyrestart(FILE* f);
 int yyparse();
@@ -36,10 +38,25 @@ int main(int argc, char const* argv[])
 
     // if (syntax_error == 0 && lexical_error == 0){
     //     print_tree(global_root, 0);
-    //     ;
     // }
+    translate_Program(global_root);
+#ifdef RELEASE
+    if (argc <= 2) {
+        return 1;
+    }
+    FILE* out = fopen(argv[2], "w");
+    if (!out) {
+        perror(argv[2]);
+        return 1;
+    }
+    PRINT(out, global_root);
+    fclose(out);
+#else
+    PRINT(stdout, global_root);
+#endif
 
-    if (global_root != NULL){
+    if (global_root != NULL) {
+        // deconstruct_code(&global_root->code);
         deconstruct(global_root);
     }
     return 0;

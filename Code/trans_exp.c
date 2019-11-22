@@ -148,7 +148,12 @@ Operand* translate_Exp_func(Node* root)
     } else {
         translate_Args(root->children[2]);
         if (strcmp(root->children[0]->node_value.id, "write") == 0) {
-            APPEND2(root, root->children[2], create_list_node(create_write((Operand*)root->children[2]->attr.opt_array->attr.array_size)));
+            Operand* temp =(Operand*)root->children[2]->attr.opt_array->attr.array_size;
+            InterCode* ic = create_write(temp);
+            if(temp->is_addr && kind(root->children[2]->attr.para_list->attr.para.type) == INT_BASIC){
+                ic->is_addr.op1 = 1;
+            }
+            APPEND2(root, root->children[2], create_list_node(ic));
             return create_const(0);
         } else {
             AttrList* p = root->children[2]->attr.opt_array;
