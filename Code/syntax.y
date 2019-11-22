@@ -2,7 +2,7 @@
     /* ... */
     #include "lex.yy.c"
     #include "semantic.h"
-    #include "translate.h"
+    #include "trans_exp.h"
 
     int yyerror(const char*);
     int yylex(void);
@@ -43,8 +43,8 @@ Program: ExtDefList {
         FORM_SUBTREE_1($$,PROGRAM,$1);
         global_root = $$;
         program_extdef($$, $1);
-        translate_Program($$);
-        print_code(stdout, &$$->code);
+        // translate_Program($$);
+        // print_code(stdout, &$$->code);
     };
 ExtDefList: ExtDef ExtDefList {
         FORM_SUBTREE_2($$,EXTDEFLIST,$1,$2)
@@ -223,8 +223,8 @@ Stmt: Exp SEMI {
         FORM_SUBTREE_2($$,STMT,$1,$2)
         $$->body.stmt = STMT_EXP;
         stmt_exp_semi($$, $1);
-        // translate_Exp($1, NULL);
-        // print_code(stdout, &$1->code);
+        translate_Exp($1, 0);
+        print_code(stdout, &$1->code);
         // printf("=================\n");
         // for(int i = 0; i < temp_id; i++){
         //     printf("temp_id: %d, state: %d\n", i, temp_state[i].state);
@@ -386,14 +386,6 @@ Exp: Exp ASSIGNOP Exp{
         FORM_SUBTREE_4($$,EXP,$1,$2,$3,$4)
         $$->body.exp = EXP_FUNC;
         exp_id_lp_args_rp($$, $1, $3);
-        // translate_Args($3);
-        // print_code(stdout, &$3->code);
-        // AttrList* p = $3->attr.para_list;
-        // while(p != NULL){
-        //     printf("%s ", p->attr.para.id);
-        //     print_type(p->attr.para.type, 0, 1);
-        //     p = p->next;
-        // }
     }
     | ID LP RP  {
         FORM_SUBTREE_3($$,EXP,$1,$2,$3)

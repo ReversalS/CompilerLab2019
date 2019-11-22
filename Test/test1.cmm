@@ -1,15 +1,5 @@
-int factorial(int a){
-    if(a <= 0){
-        return 1;
-    } else {
-        return a * factorial(a - 1);
-    }
-}
 int main(){
-    int x;
-    int y;
-    x = read();
-    y = factorial(x);
-    write(y);
-    return 0;
+    int a[5][10];
+    int b, c;
+    b = c > 4;
 }

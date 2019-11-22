@@ -1,5 +1,4 @@
 #include "semantic.h"
-#include "translate.h"
 // #include <stdio.h>
 
 int yyrestart(FILE* f);
@@ -14,7 +13,6 @@ int main(int argc, char const* argv[])
 {
     init_type_set();
     initSymbolTable();
-    init_temp_state();
 
     int t1, t2;
     t1 = construct_function("read", construct_basic(INT_BASIC));

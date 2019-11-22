@@ -8,10 +8,6 @@ ListNode* create_list_node(InterCode* ic)
     return temp;
 }
 
-void create_code(Code* code, ListNode* node){
-    code->start = code->end = node;
-}
-
 void concatenate_code(Code* result, Code* c1, Code* c2)
 {
     if (is_null(c1) && is_null(c2)) {
@@ -78,11 +74,9 @@ void remove_ic(Code* code, ListNode* node){
     free(node);
 }
 
+
 void deconstruct_code(Code* code)
 {
-    if(is_null(code)){
-        return ;
-    }
     ListNode* p = code->start;
     ListNode* prev = code->start->prev;
     ListNode* next = code->end->next;
