@@ -1,5 +1,6 @@
 #include "semantic.h"
 #include "trans_program.h"
+#include "compile.h"
 // #include <stdio.h>
 #define RELEASE
 
@@ -50,6 +51,7 @@ int main(int argc, char const* argv[])
         return 1;
     }
     PRINT(out, global_root);
+    compile(&global_root->code);
     fclose(out);
 #else
     PRINT(stdout, global_root);
