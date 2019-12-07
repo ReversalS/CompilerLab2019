@@ -1,8 +1,12 @@
+int add(int a, int b){
+    return a + b;
+}
+
 int main()
 {
-    // line comment
-    /*
-    block comment
-    */
-    int i = 1;
+    int a, b, c;
+    a = a + 1;
+    b = a * b + c * b;
+    c = a + b;
+    return c;
 }
