@@ -93,3 +93,13 @@ void init(char* filename)
     fprintf(fp, "\tmove $v0, $0\n");
     fprintf(fp, "\tjr $ra\n");
 }
+
+void emit_lw(MIPS_REG rt, MIPS_REG base, int offset)
+{
+    fprintf(fp, "\tlw %s, %d(%s)\n", reg_name[rt], offset, reg_name[base]);
+}
+
+void emit_sw(MIPS_REG rt, MIPS_REG base, int offset)
+{
+    fprintf(fp, "\tsw %s, %d(%s)\n", reg_name[rt], offset, reg_name[base]);
+}

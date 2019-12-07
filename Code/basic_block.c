@@ -82,26 +82,23 @@ void init_var_info(Code* code, Dict* var_info, int* ic_num)
         VarInfo* t1 = (op1_info == var_info->end) ? NULL : (VarInfo*)op1_info->value;
         VarInfo* t2 = (op2_info == var_info->end) ? NULL : (VarInfo*)op2_info->value;
         VarInfo* tr = (result_info == var_info->end) ? NULL : (VarInfo*)result_info->value;
-        if (t1 != NULL) {
-            t1->use[current_ic - 1] = t1->current_use;
+
+        for(DictIter i = var_info->begin; i != var_info->end; i = i->next){
+            VarInfo* t = (VarInfo*)i->value;
+            t->use[current_ic - 1] = t->current_use;
         }
-        if (t2 != NULL) {
-            t2->use[current_ic - 1] = t2->current_use;
-        }
-        if (tr != NULL) {
-            tr->use[current_ic - 1] = tr->current_use;
-        }
+
         if (p->ic->kind == ASSIGN_ST) {
-            set_use(t1, -1);
+            set_use(t1, NEVER_USE);
             set_use(t2, current_ic - 1);
         } else if (p->ic->kind == BIN_ST || p->ic->kind == IF_ST) {
-            set_use(tr, -1);
+            set_use(tr, NEVER_USE);
             set_use(t1, current_ic - 1);
             set_use(t2, current_ic - 1);
         } else if (p->ic->kind == RETURN_ST || p->ic->kind == ARG_ST || p->ic->kind == WRITE_ST) {
             set_use(t1, current_ic - 1);
         } else if (p->ic->kind == DEC_ST || p->ic->kind == CALL_FUNC_ST || p->ic->kind == READ_ST){
-            set_use(t1, - 1);
+            set_use(t1, NEVER_USE);
         }
 
         free(op1_key);
@@ -130,7 +127,7 @@ void insert_var(Dict* dict, Operand* op, int ic_num)
                 VarInfo* temp = (VarInfo*)malloc(sizeof(VarInfo));
                 memset(temp, 0, sizeof(VarInfo));
                 temp->dirt = 0;
-                temp->current_use = ic_num + 1;
+                temp->current_use = USE_IN_THE_FUTURE;
                 temp->ic_num = ic_num;
                 temp->use = (int*)malloc(ic_num * sizeof(int));
                 memset(temp->use, 0, ic_num * sizeof(int));

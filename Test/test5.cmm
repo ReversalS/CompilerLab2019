@@ -5,8 +5,11 @@ int add(int a, int b){
 int main()
 {
     int a, b, c;
-    a = a + 1;
-    b = a * b + c * b;
-    c = a + b;
+    a = 1;
+    b = 2;
+    c = 3;
+    a = b + c;
+    b = 3;
+    c = 2;
     return c;
 }

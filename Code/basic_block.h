@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define NEVER_USE -1
+#define USE_IN_THE_FUTURE -2
 
 /********** typedef **********/
 typedef struct BasicBlock BasicBlock;
