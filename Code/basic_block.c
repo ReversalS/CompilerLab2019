@@ -83,7 +83,7 @@ void init_var_info(Code* code, Dict* var_info, int* ic_num)
         VarInfo* t2 = (op2_info == var_info->end) ? NULL : (VarInfo*)op2_info->value;
         VarInfo* tr = (result_info == var_info->end) ? NULL : (VarInfo*)result_info->value;
 
-        for(DictIter i = var_info->begin; i != var_info->end; i = i->next){
+        for (DictIter i = var_info->begin; i != var_info->end; i = i->next) {
             VarInfo* t = (VarInfo*)i->value;
             t->use[current_ic - 1] = t->current_use;
         }
@@ -95,9 +95,16 @@ void init_var_info(Code* code, Dict* var_info, int* ic_num)
             set_use(tr, NEVER_USE);
             set_use(t1, current_ic - 1);
             set_use(t2, current_ic - 1);
-        } else if (p->ic->kind == RETURN_ST || p->ic->kind == ARG_ST || p->ic->kind == WRITE_ST) {
+        } else if (p->ic->kind == RETURN_ST) {
+            for (DictIter i = var_info->begin; i != var_info->end; i = i->next) {
+                VarInfo* t = (VarInfo*)i->value;
+                set_use(t, NEVER_USE);
+                t->use[current_ic - 1] = NEVER_USE;
+            }
             set_use(t1, current_ic - 1);
-        } else if (p->ic->kind == DEC_ST || p->ic->kind == CALL_FUNC_ST || p->ic->kind == READ_ST){
+        } else if (p->ic->kind == ARG_ST || p->ic->kind == WRITE_ST) {
+
+        } else if (p->ic->kind == DEC_ST || p->ic->kind == CALL_FUNC_ST || p->ic->kind == READ_ST) {
             set_use(t1, NEVER_USE);
         }
 
@@ -107,7 +114,6 @@ void init_var_info(Code* code, Dict* var_info, int* ic_num)
         p = p->prev;
         current_ic--;
     }
-    print_dict(var_info);
 }
 
 void insert_var(Dict* dict, Operand* op, int ic_num)
@@ -126,7 +132,7 @@ void insert_var(Dict* dict, Operand* op, int ic_num)
             if (i == dict->end) {
                 VarInfo* temp = (VarInfo*)malloc(sizeof(VarInfo));
                 memset(temp, 0, sizeof(VarInfo));
-                temp->dirt = 0;
+                temp->dirt = 1;
                 temp->current_use = USE_IN_THE_FUTURE;
                 temp->ic_num = ic_num;
                 temp->use = (int*)malloc(ic_num * sizeof(int));
@@ -141,16 +147,17 @@ void insert_var(Dict* dict, Operand* op, int ic_num)
 
 void print_var_info(void* key, void* value)
 {
-    printf("%s: ", (char*)key);
+    printf("%s:\t", (char*)key);
     VarInfo* t = (VarInfo*)value;
-    for(int i = 0; i < t->ic_num; i++){
-        printf("%d ", t->use[i]);
+    for (int i = 0; i < t->ic_num; i++) {
+        printf("%d\t", t->use[i]);
     }
     printf("\n");
 }
 
-void set_use(VarInfo* t, int pos){
-    if (t != NULL){
+void set_use(VarInfo* t, int pos)
+{
+    if (t != NULL) {
         t->current_use = pos;
     }
 }

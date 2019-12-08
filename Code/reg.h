@@ -3,13 +3,17 @@
 
 /********** include and macro **********/
 #include "container.h"
+#include "basic_block.h"
 #define REG_NUM 32
 #define AVAIL_REG_NUM 22
+#define UPDATE_IC current_ic++
 
 /********** typedef **********/
 typedef enum MIPS_REG MIPS_REG;
 typedef enum REG_STATE REG_STATE;
 typedef struct RegDesc RegDesc;
+typedef struct FuncDesc FuncDesc;
+typedef struct VarPos VarPos;
 
 /********** structure definition **********/
 enum REG_STATE {
@@ -57,22 +61,36 @@ struct RegDesc {
     char id[32];
 };
 
+struct FuncDesc{
+    int current_sp;
+    Dict var_pos;
+};
+
+struct VarPos{
+    int offset;
+};
+
 /********** global variable **********/
 char* reg_name[REG_NUM];
 MIPS_REG avail_regs[AVAIL_REG_NUM];
 RegDesc reg_state[REG_NUM];
 
-Dict* var_pos;
-Dict* var_info;
+FuncDesc* current_func_desc;
+Dict* current_var_info;
 int current_ic;
 
 /********** function definition **********/
 extern void emit_lw(MIPS_REG rt, MIPS_REG base, int offset);
 extern void emit_sw(MIPS_REG rt, MIPS_REG base, int offset);
+extern void emit_addi(MIPS_REG dest, MIPS_REG src, int k);
 
-void reset_reg_desc();
+void reset_reg_desc(FuncDesc* func_desc, Dict* var_info);
+int get_offset(char* x);
 MIPS_REG ensure(char* x);
 MIPS_REG allocate(char* x);
 void free_reg(MIPS_REG reg);
+void free_useless_reg(MIPS_REG reg);
 void spill_reg(MIPS_REG reg);
+
+void modify_var(char* key);
 #endif

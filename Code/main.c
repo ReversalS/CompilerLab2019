@@ -51,6 +51,8 @@ int main(int argc, char const* argv[])
         return 1;
     }
     PRINT(out, global_root);
+    fp = stdout;
+    
     compile(&global_root->code);
     fclose(out);
 #else
