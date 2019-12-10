@@ -33,6 +33,7 @@ void compile_func(Code* code)
     ListNode* p = code->start;
     Code temp;
     FuncDesc func_desc;
+    memset(&func_desc, 0, sizeof(func_desc));
     char* key;
     VarPos* value;
     int n = 0;
@@ -76,14 +77,14 @@ void compile_func(Code* code)
     }
     BBList bblist = split(&temp);
     while (bblist != NULL) {
-        printf("CODE:\n");
-        print_code(stdout, &bblist->code);
-        printf("********\n");
+        // printf("CODE:\n");
+        // print_code(stdout, &bblist->code);
+        // printf("********\n");
         init_var_info(&bblist->code, &bblist->var_info, &bblist->ic_num);
-        printf("USAGE:\n");
-        print_dict(&bblist->var_info);
+        // printf("USAGE:\n");
+        // print_dict(&bblist->var_info);
         compile_basic_block(&func_desc, bblist);
-        printf("===================\n");
+        // printf("===================\n");
         bblist = bblist->next;
     }
 }
@@ -98,26 +99,47 @@ void compile_basic_block(FuncDesc* func_desc, BBList bblist)
         Operand* op2 = ic->op2;
         Operand* result = ic->result;
         switch (p->ic->kind) {
+        case LABEL_DEF_ST:
+            emit_label(p->ic->code.label_id);
+            break;
         case ASSIGN_ST:
             compile_assign(p->ic);
+            break;
+        case GOTO_ST:
+
+            emit_j(p->ic->code.label_id);
             break;
         case DEC_ST:
             compile_dec(p->ic, func_desc);
             break;
         case BIN_ST:
             compile_bin(p->ic);
+            break;
+        case IF_ST:
+            compile_if(p->ic);
+            break;
+        case RETURN_ST:
+            compile_return(p->ic, func_desc);
+            break;
+        case ARG_ST:
+            compile_arg(p->ic, func_desc);
+            break;
+        case CALL_FUNC_ST:
+            compile_call_func(p->ic, func_desc);
+            break;
+        case READ_ST:
+            compile_read(p->ic);
+            break;
+        case WRITE_ST:
+            compile_write(p->ic);
+            break;
         default:;
             break;
         }
         UPDATE_IC;
         p = p->next;
     }
-    for (int i = 0; i < AVAIL_REG_NUM; i++) {
-        MIPS_REG reg = avail_regs[i];
-        if (reg_state[reg].state == OCCUPY) {
-            spill_reg(reg);
-        }
-    }
+    spill_all_reg();
 }
 
 void compile_assign(InterCode* ic)
@@ -155,51 +177,148 @@ void compile_dec(InterCode* ic, FuncDesc* func_desc)
 void compile_bin(InterCode* ic)
 {
     MIPS_REG op1, op2, dest;
+    op1 = op2reg(ic->op1, ic->is_addr.op1, V0);
+    op2 = op2reg(ic->op2, ic->is_addr.op2, V1);
     dest = left2reg(ic->result, ic->is_addr.result);
+
     switch (ic->code.bin_kind) {
     case PLUS_IC:
-        if (ic->op1->kind == CONST || ic->op2->kind == CONST) {
-            // addi
-            MIPS_REG src;
-            int imm;
-            if (ic->op1->kind == CONST) {
-                src = op2reg(ic->op2, ic->is_addr.op2, V0);
-                imm = ic->op1->u.ival;
-            } else {
-                src = op2reg(ic->op1, ic->is_addr.op1, V0);
-                imm = ic->op2->u.ival;
-            }
-            if (ic->is_addr.result) {
-                emit_addi(V0, src, imm);
-                emit_sw(V0, dest, 0);
-            } else {
-                emit_addi(dest, src, imm);
-            }
-            free_useless_reg(src);
+        if (ic->is_addr.result) {
+            emit_add(V0, op1, op2);
+            emit_sw(V0, dest, 0);
         } else {
-            // add
-            op1 = op2reg(ic->op1, ic->is_addr.op1, V0);
-            op2 = op2reg(ic->op2, ic->is_addr.op2, V1);
-            if (ic->is_addr.result) {
-                emit_add(V0, op1, op2);
-                emit_sw(V0, dest, 0);
-            } else {
-                emit_add(dest, op1, op2);
-            }
-            free_useless_reg(op1);
-            free_useless_reg(op2);
+            emit_add(dest, op1, op2);
         }
         break;
     case MINUS_IC:
+        if (ic->is_addr.result) {
+            emit_sub(V0, op1, op2);
+            emit_sw(V0, dest, 0);
+        } else {
+            emit_sub(dest, op1, op2);
+        }
         break;
     case STAR_IC:
+        if (ic->is_addr.result) {
+            emit_mul(V0, op1, op2);
+            emit_sw(V0, dest, 0);
+        } else {
+            emit_mul(dest, op1, op2);
+        }
         break;
     case DIV_IC:
+        if (ic->is_addr.result) {
+            emit_div(V0, op1, op2);
+            emit_sw(V0, dest, 0);
+        } else {
+            emit_div(dest, op1, op2);
+        }
         break;
     }
+
+    free_useless_reg(op1);
+    free_useless_reg(op2);
 }
 
-void init(char* filename)
+void compile_if(InterCode* ic)
+{
+    MIPS_REG op1, op2;
+    op1 = op2reg(ic->op1, ic->is_addr.op1, V0);
+    op2 = op2reg(ic->op2, ic->is_addr.op2, V1);
+    spill_all_reg();
+    emit_branch(ic->code.if_stmt.relop, op1, op2, ic->code.if_stmt.label_id);
+}
+
+void compile_return(InterCode* ic, FuncDesc* func_desc)
+{
+    MIPS_REG op1;
+    op1 = op2reg(ic->op1, ic->is_addr.op1, V0);
+    emit_return(op1, func_desc->current_sp);
+    free_useless_reg(op1);
+}
+
+void compile_arg(InterCode* ic, FuncDesc* func_desc)
+{
+    for (int j = 0; j < AVAIL_REG_NUM; j++) {
+        MIPS_REG reg = avail_regs[j];
+        if (reg_state[reg].state == OCCUPY) {
+            DictIter i = find_dict(current_var_info, reg_state[reg].id);
+            if (i == current_var_info->end) {
+                perror("variable not found\n");
+                exit(-1);
+            } else {
+                VarInfo* t = (VarInfo*)i->value;
+                if (t->dirt == 1) {
+                    t->dirt = 0;
+                    int offset = get_offset(reg_state[reg].id);
+                    emit_sw(reg, FP, offset);
+                }
+            }
+        }
+    }
+    MIPS_REG op;
+    if (ic->op1->kind == CONST) {
+        emit_li(V0, ic->op1->u.ival);
+        op = V0;
+    } else {
+        char* key = op2key(ic->op1);
+        int found = 0;
+        for (int i = 0; i < AVAIL_REG_NUM; i++) {
+            MIPS_REG reg = avail_regs[i];
+            if (reg_state[reg].state == OCCUPY && strcmp(reg_state[reg].id, key) == 0) {
+                found = 1;
+                op = reg;
+            }
+        }
+        if (!found) {
+            DictIter i = find_dict(&func_desc->var_pos, key);
+            if (i == func_desc->var_pos.end) {
+                perror("variable not found\n");
+                exit(-1);
+            } else {
+                VarPos* t = (VarPos*)i->value;
+                if (t->offset == -1) {
+                    perror("fault\n");
+                    exit(-1);
+                } else {
+                    emit_lw(V0, FP, t->offset);
+                    op = V0;
+                }
+            }
+        }
+        if (ic->is_addr.op1) {
+            emit_lw(V0, op, 0);
+            op = V0;
+        }
+    }
+    emit_push(op);
+    func_desc->arg_num++;
+}
+
+void compile_call_func(InterCode* ic, FuncDesc* func_desc)
+{
+    emit_jal(ic->code.func_name);
+    MIPS_REG op1 = left2reg(ic->op1, ic->is_addr.op1);
+    emit_move(op1, V0);
+    emit_addi(SP, SP, 4 * (func_desc->arg_num));
+    func_desc->arg_num = 0;
+}
+
+void compile_read(InterCode* ic)
+{
+    emit_jal("read");
+    MIPS_REG op1 = left2reg(ic->op1, ic->is_addr.op1);
+    emit_move(op1, V0);
+}
+
+void compile_write(InterCode* ic)
+{
+    MIPS_REG op1 = op2reg(ic->op1, ic->is_addr.op1, V0);
+    emit_move(A0, op1);
+    emit_jal("write");
+}
+
+void init(const char* filename)
 {
     fp = fopen(filename, "w");
     if (!fp) {
@@ -207,17 +326,17 @@ void init(char* filename)
     }
     fprintf(fp, ".data\n");
     fprintf(fp, "_prompt: .asciiz \"Enter an integer: \"\n");
-    fprintf(fp, "_ret: asciiz \"\\n\"\n");
-    fprintf(fp, ".global main\n");
+    fprintf(fp, "_ret: .asciiz \"\\n\"\n");
+    fprintf(fp, ".globl main\n");
     fprintf(fp, ".text\n");
-    fprintf(fp, "read:\n");
+    fprintf(fp, "\nread:\n");
     fprintf(fp, "\tli $v0, 4\n");
     fprintf(fp, "\tla $a0, _prompt\n");
     fprintf(fp, "\tsyscall\n");
     fprintf(fp, "\tli $v0, 5\n");
     fprintf(fp, "\tsyscall\n");
     fprintf(fp, "\tjr $ra\n");
-    fprintf(fp, "write:\n");
+    fprintf(fp, "\nwrite:\n");
     fprintf(fp, "\tli $v0, 1\n");
     fprintf(fp, "\tsyscall\n");
     fprintf(fp, "\tli $v0, 4\n");
@@ -284,6 +403,16 @@ MIPS_REG left2reg(Operand* result, int is_addr)
     return dest;
 }
 
+void spill_all_reg()
+{
+    for (int i = 0; i < AVAIL_REG_NUM; i++) {
+        MIPS_REG reg = avail_regs[i];
+        if (reg_state[reg].state == OCCUPY) {
+            spill_reg(reg);
+        }
+    }
+}
+
 void emit_label(int label)
 {
     fprintf(fp, "label%d:\n", label);
@@ -291,7 +420,7 @@ void emit_label(int label)
 
 void emit_func(char* func_name)
 {
-    fprintf(fp, "%s:\n", func_name);
+    fprintf(fp, "\n%s:\n", func_name);
 }
 
 void emit_j(int label)
@@ -346,7 +475,7 @@ void emit_div(MIPS_REG result, MIPS_REG op1, MIPS_REG op2)
 
 void emit_move(MIPS_REG dest, MIPS_REG src)
 {
-    fprintf(fp, "\taddu %s, %s, $zero\n", reg_name[dest], reg_name[src]);
+    fprintf(fp, "\tmove %s, %s\n", reg_name[dest], reg_name[src]);
 }
 
 void emit_lw(MIPS_REG rt, MIPS_REG base, int offset)

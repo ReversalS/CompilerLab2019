@@ -5,7 +5,7 @@
 #include "container.h"
 #include "basic_block.h"
 #define REG_NUM 32
-#define AVAIL_REG_NUM 22
+#define AVAIL_REG_NUM 21
 #define UPDATE_IC current_ic++
 
 /********** typedef **********/
@@ -63,6 +63,7 @@ struct RegDesc {
 
 struct FuncDesc{
     int current_sp;
+    int arg_num;
     Dict var_pos;
 };
 

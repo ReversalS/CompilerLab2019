@@ -45,16 +45,17 @@ int main(int argc, char const* argv[])
     if (argc <= 2) {
         return 1;
     }
-    FILE* out = fopen(argv[2], "w");
-    if (!out) {
-        perror(argv[2]);
-        return 1;
-    }
-    PRINT(out, global_root);
-    fp = stdout;
-    
+    init(argv[2]);
+    // FILE* out = fopen(argv[2], "w");
+    // if (!out) {
+    //     perror(argv[2]);
+    //     return 1;
+    // }
+    // PRINT(out, global_root);
+    // fp = stdout;
+
     compile(&global_root->code);
-    fclose(out);
+    fclose(fp);
 #else
     PRINT(stdout, global_root);
 #endif

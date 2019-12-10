@@ -1,7 +1,7 @@
 #include "reg.h"
 
 char* reg_name[REG_NUM] = { "$zero", "$at", "$v0", "$v1", "$a0", "$a1", "$a2", "$a3", "$t0", "$t1", "$t2", "$t3", "$t4", "$t5", "$t6", "$t7", "$s0", "$s1", "$s2", "$s3", "$s4", "$s5", "$s6", "$s7", "$t8", "$t9", "$k0", "$k1", "$gp", "$sp", "$fp", "$ra" };
-MIPS_REG avail_regs[AVAIL_REG_NUM] = { S0, S1, S2, S3, S4, S5, S6, S7, A0, A1, A2, A3, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9 };
+MIPS_REG avail_regs[AVAIL_REG_NUM] = { S0, S1, S2, S3, S4, S5, S6, S7, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, A1, A2, A3 };
 
 void reset_reg_desc(FuncDesc* func_desc, Dict* var_info)
 {
@@ -50,7 +50,6 @@ MIPS_REG ensure(char* x)
         exit(-1);
     } else {
         ((VarInfo*)i->value)->dirt = 0;
-        printf("load from memory\n");
     }
     return result;
 }
@@ -98,14 +97,15 @@ void free_reg(MIPS_REG reg)
     reg_state[reg].state = IDLE;
 }
 
-void free_useless_reg(MIPS_REG reg){
-    if(reg_state[reg].state == OCCUPY){
+void free_useless_reg(MIPS_REG reg)
+{
+    if (reg_state[reg].state == OCCUPY) {
         DictIter i = find_dict(current_var_info, reg_state[reg].id);
-        if( i == current_var_info->end){
+        if (i == current_var_info->end) {
             perror("variable not found\n");
             exit(-1);
         } else {
-            if(((VarInfo*)i->value)->use[current_ic] == NEVER_USE){
+            if (((VarInfo*)i->value)->use[current_ic] == NEVER_USE) {
                 free_reg(reg);
             }
         }
@@ -130,13 +130,14 @@ void spill_reg(MIPS_REG reg)
     free_reg(reg);
 }
 
-void modify_var(char* key){
+void modify_var(char* key)
+{
     DictIter i = find_dict(current_var_info, key);
-    if(i == current_var_info->end){
+    if (i == current_var_info->end) {
         perror("variable not found\n");
         exit(-1);
     } else {
-         VarInfo* t = (VarInfo*)i->value;
-         t->dirt = 1;
+        VarInfo* t = (VarInfo*)i->value;
+        t->dirt = 1;
     }
 }

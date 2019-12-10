@@ -16,12 +16,19 @@ void compile_basic_block(FuncDesc* func_desc, BBList bblist);
 void compile_assign(InterCode* ic);
 void compile_dec(InterCode* ic, FuncDesc* func_desc);
 void compile_bin(InterCode* ic);
+void compile_if(InterCode* ic);
+void compile_return(InterCode* ic, FuncDesc* func_desc);
+void compile_arg(InterCode* ic, FuncDesc* func_desc);
+void compile_call_func(InterCode* ic, FuncDesc* func_desc);
+void compile_read(InterCode* ic);
+void compile_write(InterCode* ic);
 
-void init(char* filename);
+void init(const char* filename);
 void insert_var_pos(Dict* var_pos, Operand* op);
 void print_var_pos(void* key, void* value);
 MIPS_REG op2reg(Operand* op, int is_addr, MIPS_REG k);
 MIPS_REG left2reg(Operand* result, int is_addr);
+void spill_all_reg();
 
 void emit_label(int label);
 void emit_func(char* func_name);
