@@ -1,5 +1,9 @@
 #include "compile.h"
 
+typedef void (*emit_arith)(MIPS_REG, MIPS_REG, MIPS_REG);
+emit_arith arith[4] = { emit_add, emit_sub, emit_mul, emit_div };
+char* relop_name[6] = { "lt", "le", "eq", "ne", "gt", "ge" };
+
 void compile(Code* code)
 {
     enum { INIT,
@@ -29,13 +33,13 @@ void compile(Code* code)
 
 void compile_func(Code* code)
 {
-    // TODO func desc
     ListNode* p = code->start;
     Code temp;
     FuncDesc func_desc;
-    memset(&func_desc, 0, sizeof(func_desc));
-    char* key;
-    VarPos* value;
+    memset(&func_desc, 0, sizeof(FuncDesc));
+    memset(&temp, 0, sizeof(Code));
+    char* key = NULL;
+    VarPos* value = NULL;
     int n = 0;
     func_desc.current_sp = 0;
     construct_dict(&func_desc.var_pos, str_eq, print_var_pos);
@@ -44,37 +48,39 @@ void compile_func(Code* code)
     while (p != NULL && p->prev != code->end) {
         switch (p->ic->kind) {
         case FUNC_DEF_ST:
-            // TODO emit func name
             emit_func(p->ic->code.func_name);
             emit_push(RA);
             emit_push(FP);
             emit_move(FP, SP);
-            // push $ra
-            // push $fp
-            // mov $fp, $sp
-            // printf("func name: %s\n", p->ic->code.func_name);
             break;
         case PARAM_ST:
-            // TODO
             key = string(p->ic->op1->u.var_name);
             value = (VarPos*)malloc(sizeof(VarPos));
+            memset(value, 0, sizeof(VarPos));
             value->offset = 8 + 4 * n;
             n++;
             insert_item(&func_desc.var_pos, key, value);
-            // printf("param: %s\n", p->ic->op1->u.var_name);
             break;
+        case DEC_ST:
+            key = string_t(p->ic->op1->u.temp_id);
+            value = (VarPos*)malloc(sizeof(VarPos));
+            func_desc.current_sp -= p->ic->code.dec_size;
+            value->offset = func_desc.current_sp;
+            insert_item(&func_desc.var_pos, key, value);
         default:
             if (!flag) {
                 temp.start = p;
                 flag = 1;
             }
-            insert_var_pos(&func_desc.var_pos, p->ic->op1);
-            insert_var_pos(&func_desc.var_pos, p->ic->op2);
-            insert_var_pos(&func_desc.var_pos, p->ic->result);
+            insert_var_pos(&func_desc.var_pos, p->ic->op1, &func_desc);
+            insert_var_pos(&func_desc.var_pos, p->ic->op2, &func_desc);
+            insert_var_pos(&func_desc.var_pos, p->ic->result, &func_desc);
             break;
         }
         p = p->next;
     }
+    emit_addi(SP, SP, func_desc.current_sp);
+    // print_dict(&func_desc.var_pos);
     BBList bblist = split(&temp);
     while (bblist != NULL) {
         // printf("CODE:\n");
@@ -95,43 +101,39 @@ void compile_basic_block(FuncDesc* func_desc, BBList bblist)
     ListNode* p = bblist->code.start;
     while (p != NULL && p->prev != bblist->code.end) {
         InterCode* ic = p->ic;
-        Operand* op1 = ic->op1;
-        Operand* op2 = ic->op2;
-        Operand* result = ic->result;
-        switch (p->ic->kind) {
+        switch (ic->kind) {
         case LABEL_DEF_ST:
-            emit_label(p->ic->code.label_id);
+            emit_label(ic->code.label_id);
             break;
         case ASSIGN_ST:
-            compile_assign(p->ic);
+            compile_assign(ic);
             break;
         case GOTO_ST:
-
-            emit_j(p->ic->code.label_id);
+            spill_all_reg();
+            emit_j(ic->code.label_id);
             break;
         case DEC_ST:
-            compile_dec(p->ic, func_desc);
             break;
         case BIN_ST:
-            compile_bin(p->ic);
+            compile_bin(ic);
             break;
         case IF_ST:
-            compile_if(p->ic);
+            compile_if(ic);
             break;
         case RETURN_ST:
-            compile_return(p->ic, func_desc);
+            compile_return(ic, func_desc);
             break;
         case ARG_ST:
-            compile_arg(p->ic, func_desc);
+            compile_arg(ic, func_desc);
             break;
         case CALL_FUNC_ST:
-            compile_call_func(p->ic, func_desc);
+            compile_call_func(ic, func_desc);
             break;
         case READ_ST:
-            compile_read(p->ic);
+            compile_read(ic);
             break;
         case WRITE_ST:
-            compile_write(p->ic);
+            compile_write(ic);
             break;
         default:;
             break;
@@ -161,19 +163,6 @@ void compile_assign(InterCode* ic)
     }
 }
 
-void compile_dec(InterCode* ic, FuncDesc* func_desc)
-{
-    DictIter i = find_dict(&func_desc->var_pos, string_t(ic->op1->u.temp_id));
-    if (i == func_desc->var_pos.end) {
-        perror("variable not found\n");
-        exit(-1);
-    } else {
-        func_desc->current_sp -= ic->code.dec_size;
-        emit_addi(SP, SP, -ic->code.dec_size);
-        ((VarPos*)i->value)->offset = func_desc->current_sp;
-    }
-}
-
 void compile_bin(InterCode* ic)
 {
     MIPS_REG op1, op2, dest;
@@ -181,39 +170,12 @@ void compile_bin(InterCode* ic)
     op2 = op2reg(ic->op2, ic->is_addr.op2, V1);
     dest = left2reg(ic->result, ic->is_addr.result);
 
-    switch (ic->code.bin_kind) {
-    case PLUS_IC:
-        if (ic->is_addr.result) {
-            emit_add(V0, op1, op2);
-            emit_sw(V0, dest, 0);
-        } else {
-            emit_add(dest, op1, op2);
-        }
-        break;
-    case MINUS_IC:
-        if (ic->is_addr.result) {
-            emit_sub(V0, op1, op2);
-            emit_sw(V0, dest, 0);
-        } else {
-            emit_sub(dest, op1, op2);
-        }
-        break;
-    case STAR_IC:
-        if (ic->is_addr.result) {
-            emit_mul(V0, op1, op2);
-            emit_sw(V0, dest, 0);
-        } else {
-            emit_mul(dest, op1, op2);
-        }
-        break;
-    case DIV_IC:
-        if (ic->is_addr.result) {
-            emit_div(V0, op1, op2);
-            emit_sw(V0, dest, 0);
-        } else {
-            emit_div(dest, op1, op2);
-        }
-        break;
+    emit_arith funcp = arith[ic->code.bin_kind];
+    if (ic->is_addr.result) {
+        funcp(V0, op1, op2);
+        emit_sw(V0, dest, 0);
+    } else {
+        funcp(dest, op1, op2);
     }
 
     free_useless_reg(op1);
@@ -346,7 +308,7 @@ void init(const char* filename)
     fprintf(fp, "\tjr $ra\n");
 }
 
-void insert_var_pos(Dict* var_pos, Operand* op)
+void insert_var_pos(Dict* var_pos, Operand* op, FuncDesc* func_desc)
 {
     if (op != NULL) {
         if (op->kind == CONST) {
@@ -361,7 +323,8 @@ void insert_var_pos(Dict* var_pos, Operand* op)
             DictIter i = find_dict(var_pos, key);
             if (i == var_pos->end) {
                 VarPos* temp = (VarPos*)malloc(sizeof(VarPos));
-                temp->offset = -1;
+                func_desc->current_sp -= 4;
+                temp->offset = func_desc->current_sp;
                 insert_item(var_pos, key, temp);
             }
         }
@@ -507,26 +470,5 @@ void emit_pop(MIPS_REG dest)
 
 void emit_branch(RelopType relop, MIPS_REG op1, MIPS_REG op2, int label)
 {
-    char* x;
-    switch (relop) {
-    case EQ_IC:
-        x = "eq";
-        break;
-    case NE_IC:
-        x = "ne";
-        break;
-    case GE_IC:
-        x = "ge";
-        break;
-    case GT_IC:
-        x = "gt";
-        break;
-    case LE_IC:
-        x = "le";
-        break;
-    case LT_IC:
-        x = "lt";
-        break;
-    }
-    fprintf(fp, "\tb%s %s, %s, label%d\n", x, reg_name[op1], reg_name[op2], label);
+    fprintf(fp, "\tb%s %s, %s, label%d\n", relop_name[relop], reg_name[op1], reg_name[op2], label);
 }
